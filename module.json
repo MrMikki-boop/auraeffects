@@ -1,0 +1,78 @@
+{
+  "id": "auraeffects",
+  "title": "Aura Effects",
+  "version": "1.4.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13.351",
+    "maximum": "13"
+  },
+  "authors": [
+    {
+      "name": "Michael",
+      "url": "https://github.com/roth-michael",
+      "discord": "hi25114"
+    }
+  ],
+  "esmodules": [
+    "scripts/auras.mjs"
+  ],
+  "styles": [
+    "styles/auras.css"
+  ],
+  "documentTypes": {
+    "ActiveEffect": {
+      "aura": {}
+    }
+  },
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "ru",
+      "name": "Русский",
+      "path": "lang/ru.json"
+    },
+    {
+      "lang": "it",
+      "name": "Italiano",
+      "path": "lang/it.json"
+    },
+    {
+      "lang": "pt-BR",
+      "name": "Português (Brasil)",
+      "path": "lang/pt-BR.json"
+    },
+    {
+      "lang": "cs",
+      "name": "Čeština",
+      "path": "lang/cs.json"
+    }
+  ],
+  "packs": [
+    {
+      "name": "AuraEffectsMacros",
+      "label": "Aura Effects Macros",
+      "path": "packs/aura-effects-macros",
+      "type": "Macro",
+      "module": "auraeffects"
+    }
+  ],
+  "packFolders": [
+    {
+      "name": "Aura Effects",
+      "sorting": "a",
+      "color": "#b08e1e",
+      "packs": [
+        "AuraEffectsMacros"
+      ]
+    }
+  ],
+  "url": "https://github.com/roth-michael/Aura-Effects",
+  "manifest": "https://github.com/roth-michael/Aura-Effects/releases/latest/download/module.json",
+  "download": "https://github.com/roth-michael/Aura-Effects/releases/download/1.4.0/module.zip",
+  "changelog": "https://github.com/roth-michael/Aura-Effects/releases/tag/1.4.0"
+}

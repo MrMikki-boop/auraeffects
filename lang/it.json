@@ -1,0 +1,109 @@
+{
+    "AURAEFFECTS": {
+        "ACTIVEEFFECT": {
+            "Aura": {
+                "FIELDS": {
+                    "applyToSelf": {
+                        "hint": "Se abilitato, quest’aura si applicherà anche al token sorgente.",
+                        "label": "Applica a Sé Stesso"
+                    },
+                    "bestFormula": {
+                        "hint": "Una formula da valutare con i dati di tiro dell’attore sorgente per determinare l’effetto più potente in situazioni in cui gli effetti non si sommano. Se lasciata vuota, verrà applicato il primo effetto valido.",
+                        "label": "Formula \"Migliore\""
+                    },
+                    "canStack": {
+                        "hint": "Se abilitato, altre aure con lo stesso nome potranno applicarsi contemporaneamente ai token validi.",
+                        "label": "Aura Cumulabile"
+                    },
+                    "collisionTypes": {
+                        "hint": "Quali tipi di muro (se presenti) bloccheranno questa aura.",
+                        "label": "Tipi Collisione"
+                    },
+                    "color": {
+                        "hint": "Se lasciato vuoto, eredita il colore dell’utente (o del GM, se nessun utente ha assegnato l’attore come personaggio).",
+                        "label": "Colore"
+                    },
+                    "combatOnly": {
+                        "hint": "Se abilitato, questo effetto sarà attivo solo durante il combattimento.",
+                        "label": "Solo in Combattimento"
+                    },
+                    "disableOnHidden": {
+                        "hint": "Se abilitato, questo effetto sarà disattivato quando il token è nascosto.",
+                        "label": "Disattiva se Nascosto"
+                    },
+                    "disposition": {
+                        "Choices": {
+                            "Any": "Qualsiasi",
+                            "Friendly": "Amichevole",
+                            "Hostile": "Ostile"
+                        },
+                        "hint": "A quali token (in base alla disposizione rispetto alla sorgente) si applica quest’aura.",
+                        "label": "Disposizione"
+                    },
+                    "distanceFormula": {
+                        "hint": "Specifica il raggio d’azione dell’aura (accetta dati di tiro).",
+                        "label": "Distanza"
+                    },
+                    "evaluatePreApply": {
+                        "hint": "Se abilitato, le modifiche saranno valutate prima di applicare l’effetto, usando i dati di tiro dell’attore sorgente se necessario.",
+                        "label": "Valuta Modifiche in Anticipo"
+                    },
+                    "opacity": {
+                        "hint": "Livello di opacità o trasparenza dell’aura visibile.",
+                        "label": "Opacità"
+                    },
+                    "overrideName": {
+                        "hint": "Nome che avrà l’effetto applicato (lascia vuoto per usare il nome dell’effetto base).",
+                        "label": "Nome dell’Effetto"
+                    },
+                    "script": {
+                        "hint": "Un’espressione che, se vera (o vuota), consente l’applicazione dell’aura.",
+                        "label": "Script Condizionale"
+                    },
+                    "showRadius": {
+                        "hint": "Mostra i bordi dell’aura a tutti gli utenti.",
+                        "label": "Mostra Raggio"
+                    }
+                }
+            }
+        },
+        "ConvertToAura": "Converti in Aura",
+        "ConvertToAuraHint": "Converte immediatamente questo effetto in un’aura sorgente.",
+        "ConvertToNormal": "Ripristina come Effetto Normale",
+        "ConvertToNormalHint": "Ripristina immediatamente questo effetto al tipo originale; le impostazioni aura verranno perse.",
+        "Errors": {
+            "ScriptError": "Errore durante l’esecuzione dello Script Condizionale per l’effetto \"{effect}\" sull’attore \"{actor}\":\n{error}"
+        },
+        "Migrations": {
+            "ActiveAurasBegin": "Avvio della migrazione da Active Auras a Aura Effects...",
+            "ActiveAurasChatMessage": "Grazie per aver installato Aura Effects! Se usavi Active Auras, è disponibile uno script per convertire tutti i tuoi effetti. Puoi trovarlo nella cartella del compendio di Aura Effects o eseguirlo cliccando qui: @UUID[Compendium.auraeffects.AuraEffectsMacros.Macro.NeaP6NSy6TzLQuKS]{Migra da Active Auras}",
+            "ActiveAurasComplete": "Migrazione da Active Auras ad Aura Effects completata!",
+            "AllCompleted": "Tutte le migrazioni di Aura Effects completate!",
+            "Beginning": "Avvio delle migrazioni di Aura Effects..."
+        },
+        "NoActiveGM": "Aura Effects non funzionerà senza un GM attivo.",
+        "SETTINGS": {
+            "DefaultVisibility": {
+                "Hint": "Se abilitato, le nuove aure saranno visibili per impostazione predefinita.",
+                "Name": "Visibilità Predefinita delle Aura Effects"
+            },
+            "DisableScrollingText": {
+                "Hint": "Disattiva il testo scorrevole che appare quando si aggiungono o rimuovono effetti da aura su un attore.",
+                "Name": "Disattiva Testo Scorrevole per Aura"
+            },
+            "DisableVisuals": {
+                "Hint": "Disattiva completamente la visualizzazione del raggio aura, ignorando le impostazioni degli effetti.",
+                "Name": "Disattiva Visualizzazione"
+            },
+            "ExactCircles": {
+                "Hint": "Se abilitato, le aure saranno mostrate come cerchi perfetti quando \"Diagonali a Griglia\" è impostato su \"Esatte\" (può causare errori visivi ai bordi per aure grandi).",
+                "Name": "Mostra Cerchi con Diagonali Esatte"
+            }
+        },
+        "SHEETS.AuraActiveEffectSheet": "Scheda Effetto Attivo Aura"
+    },
+    "EFFECT.TABS": {
+        "aura": "Aura"
+    },
+    "TYPES.ActiveEffect.auraeffects.aura": "Aura"
+}

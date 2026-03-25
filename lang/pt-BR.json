@@ -1,0 +1,109 @@
+{
+    "AURAEFFECTS": {
+        "ACTIVEEFFECT": {
+            "Aura": {
+                "FIELDS": {
+                    "applyToSelf": {
+                        "hint": "Se habilitado, esta aura será aplicada ao token de origem.",
+                        "label": "Aplicar a Si Mesmo"
+                    },
+                    "bestFormula": {
+                        "hint": "Uma fórmula para avaliar com os dados de rolagem do ator de origem para determinar o efeito mais poderoso em uma situação sem acúmulo. Se deixado em branco, será validado por ordem de chegada.",
+                        "label": "\"Melhor\" Fórmula"
+                    },
+                    "canStack": {
+                        "hint": "Se habilitado, outras auras com o mesmo nome podem ser aplicadas ao mesmo tempo a quaisquer tokens aplicáveis.",
+                        "label": "Aura Pode Acumular"
+                    },
+                    "collisionTypes": {
+                        "hint": "Quais tipos de parede, se houver alguma, impedirão essa aura.",
+                        "label": "Tipos de Colisão"
+                    },
+                    "color": {
+                        "hint": "Se estiver em branco, herdará a cor do usuário (ou a cor do Mestre, se nenhum usuário tiver o ator definido como seu personagem).",
+                        "label": "Cor"
+                    },
+                    "combatOnly": {
+                        "hint": "Se ativado, este efeito será suprimido fora do combate.",
+                        "label": "Apenas em Combate"
+                    },
+                    "disableOnHidden": {
+                        "hint": "Se habilitado, este efeito será suprimido enquanto o token em que ele está, estiver oculto.",
+                        "label": "Esconder Se Oculto"
+                    },
+                    "disposition": {
+                        "Choices": {
+                            "Any": "Qualquer",
+                            "Friendly": "Amigável",
+                            "Hostile": "Hostil"
+                        },
+                        "hint": "A quais disposições de token (em relação ao token de origem) esta aura será aplicada.",
+                        "label": "Disposição"
+                    },
+                    "distanceFormula": {
+                        "hint": "Especifica o raio em que esta aura se estende (dados de rolagem são aceitos).",
+                        "label": "Distância"
+                    },
+                    "evaluatePreApply": {
+                        "hint": "Se habilitado, os valores alterados serão avaliados antes da aplicação do efeito, usando os dados de rolagem do ator de origem, se necessário.",
+                        "label": "Avaliar Mudanças Cedo"
+                    },
+                    "opacity": {
+                        "hint": "Quão opaca ou transparente a aura deve parecer.",
+                        "label": "Opacidade"
+                    },
+                    "overrideName": {
+                        "hint": "Qual nome o efeito aplicado deve ter (deixe em branco para usar o nome do efeito base).",
+                        "label": "Nome do Efeito"
+                    },
+                    "script": {
+                        "hint": "Uma expressão que, se verdadeira (ou em branco), significa que a aura deve ser aplicada.",
+                        "label": "Script Condicional"
+                    },
+                    "showRadius": {
+                        "hint": "Se deve ou não exibir bordas de aura para cada usuário.",
+                        "label": "Mostrar Raio"
+                    }
+                }
+            }
+        },
+        "ConvertToAura": "Converter para Aura",
+        "ConvertToAuraHint": "Isso transformará imediatamente esse efeito em um efeito de origem de Aura.",
+        "ConvertToNormal": "Reverter para Efeito Normal",
+        "ConvertToNormalHint": "Isso reverterá imediatamente esse efeito ao seu tipo original. As configurações de aura serão perdidas.",
+        "Errors": {
+            "ScriptError": "Erro ao executar o Script Condicional de Efeitos de Aura para o efeito \"{effect}\" no ator \"{actor}\":\n{error}"
+        },
+        "Migrations": {
+            "ActiveAurasBegin": "Iniciando a migração de Active Auras para Aura Effects...",
+            "ActiveAurasChatMessage": "Obrigado por instalar o Aura Effects! Se você já usou o Active Auras, existe um script de migração para converter todos os seus efeitos do Active Aura em Aura Effects. Você pode encontrá-lo a qualquer momento na pasta do compêndio do Aura Effects ou executá-lo clicando aqui: @UUID[Compendium.auraeffects.AuraEffectsMacros.Macro.NeaP6NSy6TzLQuKS]{Migrate from Active Auras}",
+            "ActiveAurasComplete": "Migração de Active Auras para Aura Effects concluída!",
+            "AllCompleted": "Todas as migrações de Aura Effects foram concluídas!",
+            "Beginning": "Iniciando migrações de Aura Effects..."
+        },
+        "NoActiveGM": "Aura Effects não funcionará sem um Mestre conectado.",
+        "SETTINGS": {
+            "DefaultVisibility": {
+                "Hint": "Quando habilitado, a visualização será ativada por padrão para quaisquer efeitos de aura recém-criados.",
+                "Name": "Aura Effects Visíveis por Padrão"
+            },
+            "DisableScrollingText": {
+                "Hint": "Desabilite o texto de rolagem que aparece ao adicionar/remover efeitos causados pela aura ao ator de um token.",
+                "Name": "Desativar Rolagem de Texto de Aura Effects"
+            },
+            "DisableVisuals": {
+                "Hint": "Desabilite completamente a visualização do raio da aura, independentemente das configurações de efeito.",
+                "Name": "Desativar Efeitos Visuais"
+            },
+            "ExactCircles": {
+                "Hint": "Quando ativado, as auras visualizadas serão mostradas como círculos perfeitos quando a opção \"Diagonais da Grade\" estiver definida como \"Exata\". (Isso pode resultar em visualizações imprecisas ao redor das bordas dos círculos, especialmente com raios de aura maiores).",
+                "Name": "Mostrar Círculos com Diagonais Exatas"
+            }
+        },
+        "SHEETS.AuraActiveEffectSheet": "Ficha de Aura Effect"
+    },
+    "EFFECT.TABS": {
+        "aura": "Aura"
+    },
+    "TYPES.ActiveEffect.auraeffects.aura": "Aura"
+}

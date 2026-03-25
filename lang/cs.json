@@ -1,0 +1,109 @@
+{
+    "AURAEFFECTS": {
+        "ACTIVEEFFECT": {
+            "Aura": {
+                "FIELDS": {
+                    "applyToSelf": {
+                        "hint": "Po zaškrtnutí tato aura bude působit i na zdrojový token.",
+                        "label": "Působit na sebe?"
+                    },
+                    "bestFormula": {
+                        "hint": "Vzorec vyhodnocovaný pomocí dat hodu zdrojového aktéra pro určení nejsilnějšího efektu v případě nemožnosti sčítání. Pokud zůstane prázdné, rozhoduje pořadí.",
+                        "label": "\"Nejlepší\" vzorec"
+                    },
+                    "canStack": {
+                        "hint": "Po zaškrtnutí se na příslušné tokeny mohou současně uplatnit i další aury se stejným názvem.",
+                        "label": "Mohou se aury sčítat?"
+                    },
+                    "collisionTypes": {
+                        "hint": "Jaké typy zdí, pokud vůbec nějaké, tuto auru zastaví.",
+                        "label": "Typy kolize"
+                    },
+                    "color": {
+                        "hint": "Pokud je prázdné, převezme barvu uživatele (nebo PJ, pokud nemá postavu přiřazenou žádný uživatel).",
+                        "label": "Barva"
+                    },
+                    "combatOnly": {
+                        "hint": "Po zaškrtnutí bude tento efekt mimo boj potlačován.",
+                        "label": "Pouze v boji?"
+                    },
+                    "disableOnHidden": {
+                        "hint": "Po zaškrtnutí bude, pokud je token skrytý, tento efekt potlačován.",
+                        "label": "Potlačit při skrytí tokenu?"
+                    },
+                    "disposition": {
+                        "Choices": {
+                            "Any": "Jakýkoli",
+                            "Friendly": "Přátelský",
+                            "Hostile": "Nepřátelský"
+                        },
+                        "hint": "Na jaké typy postojů (vztahujících se ke zdrojovému tokenu) se tato aura vztahuje.",
+                        "label": "Postoj"
+                    },
+                    "distanceFormula": {
+                        "hint": "Určuje poloměr, do jaké vzdálenosti tato aura sahá (lze použít i datový vzorec).",
+                        "label": "Vzdálenost"
+                    },
+                    "evaluatePreApply": {
+                        "hint": "Po zaškrtnutí budou změny vyhodnoceny před aplikací efektu s využitím dat hodu zdrojového aktéra, pokud je třeba.",
+                        "label": "Vyhodnotit změny dříve"
+                    },
+                    "opacity": {
+                        "hint": "Jak průhledná či neprůhledná má aura být.",
+                        "label": "Neprůhlednost"
+                    },
+                    "overrideName": {
+                        "hint": "Jaký název má mít použitý efekt (pro převzetí názvu základního efektu ponech prázdné).",
+                        "label": "Název efektu"
+                    },
+                    "script": {
+                        "hint": "Výraz, který, pokud je pravdivý či prázdný, znamená, že se má aura použít.",
+                        "label": "Podmíněný skript"
+                    },
+                    "showRadius": {
+                        "hint": "Po zaškrtnutí se okraj aury zobrazí u všech uživatelů.",
+                        "label": "Zobrazit poloměr?"
+                    }
+                }
+            }
+        },
+        "ConvertToAura": "Převést na auru",
+        "ConvertToAuraHint": "Okamžitě převede tento efekt na zdrojový efekt aury.",
+        "ConvertToNormal": "Vrátit zpět na běžný efekt",
+        "ConvertToNormalHint": "Okamžitě vrátí tento efekt na původní typ; nastavení aury bude ztraceno.",
+        "Errors": {
+            "ScriptError": "Chyba při spouštění podmíněného skriptu efektu aury pro efekt „{effect}“ u aktéra „{actor}“:\n{error}"
+        },
+        "Migrations": {
+            "ActiveAurasBegin": "Zahájena migrace z Active Auras na Aura Effects...",
+            "ActiveAurasChatMessage": "Děkujeme za instalaci Aura Effects! Pokud jsi dříve používal/a Active Auras, je k dispozici migrační skript pro převedení všech efektů Active Aura na efekty Aura Effects. Najdeš ho kdykoli ve složce kompendia Aura Effects nebo jej spusť kliknutím zde: @UUID[Compendium.auraeffects.AuraEffectsMacros.Macro.NeaP6NSy6TzLQuKS]{Migrovat z Active Auras}",
+            "ActiveAurasComplete": "Migrace z Active Auras na Aura Effects byla dokončena!",
+            "AllCompleted": "Všechny migrace Aura Effects byly dokončeny!",
+            "Beginning": "Zahájena migrace efektů Aura Effects..."
+        },
+        "NoActiveGM": "Aura Effects nebude fungovat, pokud nebude přihlášen žádný PJ.",
+        "SETTINGS": {
+            "DefaultVisibility": {
+                "Hint": "Po zaškrtnutí bude vizualizace ve výchozím nastavení zapnutá pro všechny nově vytvořené efekty aury.",
+                "Name": "Výchozí viditelnost efektů aur?"
+            },
+            "DisableScrollingText": {
+                "Hint": "Zakáže posouvající se text zobrazovaný při přidání/odebrání efektu způsobeného aurou na aktéra tokenu.",
+                "Name": "Zakázat posouvající se text?"
+            },
+            "DisableVisuals": {
+                "Hint": "Úplně zakáže vizualizaci poloměru aury, bez ohledu na nastavení efektu.",
+                "Name": "Zakázat vizualizaci?"
+            },
+            "ExactCircles": {
+                "Hint": "Pokud je nastavení \"Grid Diagonals\" nastaveno na \"Exact.\", budou po zaškrtnutí vizualizované aury zobrazovány jako dokonalé kruhy. (Může vést k nepřesné vizualizaci na okrajích kruhů, zejména u větších aur.)",
+                "Name": "Zobrazovat přesné úhlopříčky?"
+            }
+        },
+        "SHEETS.AuraActiveEffectSheet": "Deník aktivního efektu aury"
+    },
+    "EFFECT.TABS": {
+        "aura": "Aura"
+    },
+    "TYPES.ActiveEffect.auraeffects.aura": "Aura"
+}
