@@ -51,7 +51,31 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
         priority: new NumberField()
       })),
       stashedStatuses: new SetField(new StringField()),
-      showRadius: new BooleanField({ initial: false })
+      showRadius: new BooleanField({ initial: false }),
+
+      // --- On-Enter Effect fields ---
+      onEnterFormula: new StringField({ initial: "" }),
+      onEnterEnabled: new BooleanField({ initial: false }),
+      onEnterHealType: new StringField({
+        initial: "hp",
+        choices: {
+          hp: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.hp",
+          temp: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.temp"
+        }
+      }),
+      // Default FRIENDLY so Healing Spirit works out of the box
+      onEnterDisposition: new NumberField({
+        initial: DISPOSITIONS.FRIENDLY,
+        choices: {
+          [DISPOSITIONS.HOSTILE]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Hostile",
+          [DISPOSITIONS.ANY]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Any",
+          [DISPOSITIONS.FRIENDLY]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Friendly"
+        }
+      }),
+      onEnterUsesMax: new StringField({ initial: "" }),
+      // -1 = uninitialised (treated as full). Actual decrement happens in onEnterHealing.mjs.
+      onEnterUsesRemaining: new NumberField({ initial: -1, integer: true }),
+      onEnterScript: new JavaScriptField()
     }
   }
 
@@ -69,7 +93,30 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
     return new Roll(this.distanceFormula || "0", this.parent.parent?.getRollData?.()).evaluateSync({ strict: false }).total;
   }
 
+  get hasOnEnterEffect() {
+    return this.onEnterEnabled && !!this.onEnterFormula?.trim();
+  }
+
+  get maxUses() {
+    if (!this.onEnterUsesMax?.trim()) return Infinity;
+    const actor = this.parent.parent instanceof Item
+      ? this.parent.parent.actor
+      : this.parent.parent;
+    return new Roll(this.onEnterUsesMax, actor?.getRollData?.() ?? {}).evaluateSync({ strict: false }).total;
+  }
+
+  /**
+   * -1 means "never written yet" → treat as fully charged (maxUses).
+   * No DB write here — writes happen only when a use is consumed.
+   */
+  get remainingUses() {
+    if (!this.onEnterUsesMax?.trim()) return Infinity;
+    if (this.onEnterUsesRemaining < 0) return this.maxUses;
+    return this.onEnterUsesRemaining;
+  }
+
   prepareDerivedData() {
+    // IMPORTANT: no DB writes here — called too frequently, causes update loops.
     let actor = this.parent.parent;
     if (actor instanceof Item) actor = actor.actor;
     if (!this.applyToSelf) {
@@ -80,7 +127,6 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
     } else {
       const token = actor?.getActiveTokens(false, true)[0];
       if (token) {
-        // Don't try to execute the script for synthetic actors that haven't yet had their delta prepared, lest we enter a loop
         const deltaPrepped = !actor.isToken || Object.getOwnPropertyDescriptor(token, "delta")?.value;
         if (deltaPrepped && !executeScript(token, token, this.parent)) {
           this.stashedChanges = this.parent.changes;

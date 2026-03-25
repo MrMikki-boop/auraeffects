@@ -63,6 +63,34 @@
                     "showRadius": {
                         "hint": "Whether to display aura borders for every user.",
                         "label": "Show Radius"
+                    },
+                    "onEnterEnabled": {
+                        "hint": "If enabled, a roll-and-heal triggers when a token enters or starts its turn inside this aura.",
+                        "label": "Enable On-Enter Healing"
+                    },
+                    "onEnterFormula": {
+                        "hint": "Dice formula to roll when a token enters the aura (e.g. 1d6, 2d6+@abilities.wis.mod). Source actor roll data is available.",
+                        "label": "Heal Formula"
+                    },
+                    "onEnterHealType": {
+                        "hint": "Whether the roll restores normal HP or applies temporary HP.",
+                        "label": "Heal Type",
+                        "Choices": {
+                            "hp": "Hit Points",
+                            "temp": "Temporary HP"
+                        }
+                    },
+                    "onEnterDisposition": {
+                        "hint": "Which token dispositions (relative to the source token) are affected by on-enter healing. Defaults to Friendly.",
+                        "label": "Heal Targets"
+                    },
+                    "onEnterUsesMax": {
+                        "hint": "Maximum number of times this healing can trigger before being exhausted. Leave blank for unlimited. Roll data accepted (e.g. 1+@abilities.wis.mod).",
+                        "label": "Max Uses"
+                    },
+                    "onEnterScript": {
+                        "hint": "Optional JS expression: if true (or blank) the entering token receives healing. Same variables as Conditional Script. Example to exclude undead & constructs: ![\"undead\",\"construct\"].includes(actor.system.details?.type?.value)",
+                        "label": "Heal Condition"
                     }
                 }
             }
@@ -82,6 +110,12 @@
             "Beginning": "Beginning Aura Effects migrations..."
         },
         "NoActiveGM": "Aura Effects will not attempt to function without a GM logged in.",
+        "OnEnter": {
+            "Legend": "On-Enter Healing",
+            "UsesRemaining": "Uses Remaining",
+            "ResetUsesHint": "Reset the uses counter back to maximum.",
+            "UsesExhausted": "Aura \"{effect}\" has no uses remaining and will no longer heal."
+        },
         "SETTINGS": {
             "DefaultVisibility": {
                 "Hint": "When enabled, visualization will be on by default for any newly-created aura effects.",

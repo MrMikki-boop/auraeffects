@@ -14,7 +14,8 @@ export default function AuraActiveEffectSheetMixin(ActiveEffectSheet) {
   
     static DEFAULT_OPTIONS = {
       actions: {
-        revert: AuraActiveEffectSheet.#onRevert
+        revert: AuraActiveEffectSheet.#onRevert,
+        resetUses: AuraActiveEffectSheet.#onResetUses
       }
     };
   
@@ -36,6 +37,19 @@ export default function AuraActiveEffectSheetMixin(ActiveEffectSheet) {
       foundry.utils.setProperty(updates, "flags.-=auraeffects", null);
       updates["==system"] = {};
       this.document.update(updates);
+    }
+
+    /**
+     * Reset the onEnter uses counter back to the maximum (re-evaluating the formula).
+     */
+    static #onResetUses() {
+      const sys = this.document.system;
+      if (!sys.onEnterUsesMax?.trim()) return;
+      const actor = this.document.parent instanceof Actor
+        ? this.document.parent
+        : this.document.parent?.parent;
+      const max = new Roll(sys.onEnterUsesMax, actor?.getRollData?.() ?? {}).evaluateSync({ strict: false }).total;
+      this.document.update({ "system.onEnterUsesRemaining": max });
     }
   }
 }

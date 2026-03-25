@@ -3,6 +3,7 @@
         <i class="fa-solid fa-xmark"></i>
         {{localize "AURAEFFECTS.ConvertToNormal"}}
     </button>
+
     {{formGroup fields.distanceFormula value=source.system.distanceFormula rootId=rootId}}
     {{formGroup fields.applyToSelf value=source.system.applyToSelf rootId=rootId}}
     {{formGroup fields.disposition value=source.system.disposition localize=true rootId=rootId}}
@@ -19,4 +20,29 @@
     {{formGroup fields.color value=source.system.color rootId=rootId}}
     {{formGroup fields.opacity value=source.system.opacity rootId=rootId}}
     {{formGroup fields.script value=source.system.script rootId=rootId}}
+
+    <fieldset>
+        <legend>{{localize "AURAEFFECTS.OnEnter.Legend"}}</legend>
+
+        {{formGroup fields.onEnterEnabled value=source.system.onEnterEnabled rootId=rootId}}
+
+        {{#if source.system.onEnterEnabled}}
+            {{formGroup fields.onEnterFormula value=source.system.onEnterFormula rootId=rootId}}
+            {{formGroup fields.onEnterHealType value=source.system.onEnterHealType localize=true rootId=rootId}}
+            {{formGroup fields.onEnterDisposition value=source.system.onEnterDisposition localize=true rootId=rootId}}
+            {{formGroup fields.onEnterUsesMax value=source.system.onEnterUsesMax rootId=rootId}}
+            {{#if source.system.onEnterUsesMax}}
+                <div class="form-group">
+                    <label>{{localize "AURAEFFECTS.OnEnter.UsesRemaining"}}</label>
+                    <div class="form-fields">
+                        <span>{{source.system.onEnterUsesRemaining}}</span>
+                        <button type="button" data-action="resetUses" data-tooltip="AURAEFFECTS.OnEnter.ResetUsesHint">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+                </div>
+            {{/if}}
+            {{formGroup fields.onEnterScript value=source.system.onEnterScript rootId=rootId}}
+        {{/if}}
+    </fieldset>
 </section>
