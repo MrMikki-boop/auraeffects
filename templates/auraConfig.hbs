@@ -4,6 +4,7 @@
         {{localize "AURAEFFECTS.ConvertToNormal"}}
     </button>
 
+    {{!-- ═══ Base aura settings ═══ --}}
     {{formGroup fields.distanceFormula value=source.system.distanceFormula rootId=rootId}}
     {{formGroup fields.applyToSelf value=source.system.applyToSelf rootId=rootId}}
     {{formGroup fields.disposition value=source.system.disposition localize=true rootId=rootId}}
@@ -16,33 +17,63 @@
     {{formGroup fields.collisionTypes value=source.system.collisionTypes localize=true rootId=rootId}}
     {{formGroup fields.combatOnly value=source.system.combatOnly rootId=rootId}}
     {{formGroup fields.disableOnHidden value=source.system.disableOnHidden rootId=rootId}}
-    {{formGroup fields.showRadius value=source.system.showRadius rootId=rootId}}
-    {{formGroup fields.color value=source.system.color rootId=rootId}}
-    {{formGroup fields.opacity value=source.system.opacity rootId=rootId}}
     {{formGroup fields.script value=source.system.script rootId=rootId}}
 
+    {{!-- ═══ Visualization ═══ --}}
+    <fieldset>
+        <legend>{{localize "AURAEFFECTS.OnEnter.VisualizationLegend"}}</legend>
+        {{formGroup fields.showRadius value=source.system.showRadius rootId=rootId}}
+        {{formGroup fields.color value=source.system.color rootId=rootId}}
+        {{formGroup fields.opacity value=source.system.opacity rootId=rootId}}
+    </fieldset>
+
+    {{!-- ═══ On-Enter Effects ═══ --}}
     <fieldset>
         <legend>{{localize "AURAEFFECTS.OnEnter.Legend"}}</legend>
 
+        {{!-- Common settings --}}
         {{formGroup fields.onEnterEnabled value=source.system.onEnterEnabled rootId=rootId}}
-
-        {{source.system.onEnterEnabled}}
-            {{formGroup fields.onEnterFormula value=source.system.onEnterFormula rootId=rootId}}
-            {{formGroup fields.onEnterHealType value=source.system.onEnterHealType localize=true rootId=rootId}}
-            {{formGroup fields.onEnterDisposition value=source.system.onEnterDisposition localize=true rootId=rootId}}
-            {{formGroup fields.onEnterUsesMax value=source.system.onEnterUsesMax rootId=rootId}}
-            {{#if source.system.onEnterUsesMax}}
-                <div class="form-group">
-                    <label>{{localize "AURAEFFECTS.OnEnter.UsesRemaining"}}</label>
-                    <div class="form-fields">
-                        <span>{{source.system.onEnterUsesRemaining}}</span>
-                        <button type="button" data-action="resetUses" data-tooltip="AURAEFFECTS.OnEnter.ResetUsesHint">
-                            <i class="fa-solid fa-rotate-left"></i>
-                        </button>
-                    </div>
+        {{formGroup fields.onEnterDisposition value=source.system.onEnterDisposition localize=true rootId=rootId}}
+        {{formGroup fields.onEnterApplyToSelf value=source.system.onEnterApplyToSelf rootId=rootId}}
+        {{formGroup fields.onEnterUsesMax value=source.system.onEnterUsesMax rootId=rootId}}
+        {{#if source.system.onEnterUsesMax}}
+            <div class="form-group">
+                <label>{{localize "AURAEFFECTS.OnEnter.UsesRemaining"}}</label>
+                <div class="form-fields">
+                    <span>{{source.system.onEnterUsesRemaining}}</span>
+                    <button type="button" data-action="resetUses" data-tooltip="AURAEFFECTS.OnEnter.ResetUsesHint">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
                 </div>
-            {{/if}}
-            {{formGroup fields.onEnterApplyToSelf value=source.system.onEnterApplyToSelf rootId=rootId}}
-            {{formGroup fields.onEnterScript value=source.system.onEnterScript rootId=rootId}}
+            </div>
+        {{/if}}
+        {{formGroup fields.onEnterScript value=source.system.onEnterScript rootId=rootId}}
+
+        {{!-- Healing --}}
+        <fieldset>
+            <legend>{{localize "AURAEFFECTS.OnEnter.HealLegend"}}</legend>
+            {{formGroup fields.onEnterHealEnabled value=source.system.onEnterHealEnabled rootId=rootId}}
+            {{formGroup fields.onEnterHealFormula value=source.system.onEnterHealFormula rootId=rootId}}
+            {{formGroup fields.onEnterHealType value=source.system.onEnterHealType localize=true rootId=rootId}}
+        </fieldset>
+
+        {{!-- Damage --}}
+        <fieldset>
+            <legend>{{localize "AURAEFFECTS.OnEnter.DmgLegend"}}</legend>
+            {{formGroup fields.onEnterDmgEnabled value=source.system.onEnterDmgEnabled rootId=rootId}}
+            {{formGroup fields.onEnterDmgFormula value=source.system.onEnterDmgFormula rootId=rootId}}
+            {{formGroup fields.onEnterDmgType value=source.system.onEnterDmgType localize=true rootId=rootId}}
+            {{formGroup fields.onEnterDmgDisposition value=source.system.onEnterDmgDisposition localize=true rootId=rootId}}
+        </fieldset>
+
+        {{!-- Saving throw --}}
+        <fieldset>
+            <legend>{{localize "AURAEFFECTS.OnEnter.SaveLegend"}}</legend>
+            {{formGroup fields.onEnterSaveEnabled value=source.system.onEnterSaveEnabled rootId=rootId}}
+            {{formGroup fields.onEnterSaveAbility value=source.system.onEnterSaveAbility localize=true rootId=rootId}}
+            {{formGroup fields.onEnterSaveDC value=source.system.onEnterSaveDC rootId=rootId}}
+            {{formGroup fields.onEnterSaveFailEffect value=source.system.onEnterSaveFailEffect rootId=rootId}}
+            {{formGroup fields.onEnterSaveDisposition value=source.system.onEnterSaveDisposition localize=true rootId=rootId}}
+        </fieldset>
     </fieldset>
 </section>

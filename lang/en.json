@@ -65,15 +65,11 @@
                         "label": "Show Radius"
                     },
                     "onEnterEnabled": {
-                        "hint": "If enabled, a roll-and-heal triggers when a token enters or starts its turn inside this aura.",
-                        "label": "Enable On-Enter Healing"
-                    },
-                    "onEnterFormula": {
-                        "hint": "Dice formula to roll when a token enters the aura (e.g. 1d6, 2d6+@abilities.wis.mod). Source actor roll data is available.",
-                        "label": "Heal Formula"
+                        "hint": "Master switch. Enable on-enter effects (heal / damage / save) for this aura.",
+                        "label": "Enable On-Enter Effects"
                     },
                     "onEnterHealType": {
-                        "hint": "Whether the roll restores normal HP or applies temporary HP.",
+                        "hint": "Restore normal HP or apply temporary HP.",
                         "label": "Heal Type",
                         "Choices": {
                             "hp": "Hit Points",
@@ -95,6 +91,50 @@
                     "onEnterApplyToSelf": {
                         "hint": "If enabled, the aura source token will also receive the on-enter heal at the start of its own turn.",
                         "label": "Heal Self (on own turn)"
+                    },
+                    "onEnterHealEnabled": {
+                        "hint": "Roll the formula below and restore HP (or apply temp HP) to the token.",
+                        "label": "Enable Healing"
+                    },
+                    "onEnterHealFormula": {
+                        "hint": "Dice formula for healing (e.g. 1d6, 2d6+@abilities.wis.mod).",
+                        "label": "Heal Formula"
+                    },
+                    "onEnterDmgEnabled": {
+                        "hint": "Roll the formula below and deal damage (with resistances/immunities via dnd5e applyDamage).",
+                        "label": "Enable Damage"
+                    },
+                    "onEnterDmgFormula": {
+                        "hint": "Dice formula for damage (e.g. 2d4, 1d6+@abilities.int.mod).",
+                        "label": "Damage Formula"
+                    },
+                    "onEnterDmgType": {
+                        "hint": "Damage type — used for resistance/immunity checks in dnd5e.",
+                        "label": "Damage Type"
+                    },
+                    "onEnterSaveEnabled": {
+                        "hint": "Prompt an ability saving throw for the token. On failure, optionally apply an effect.",
+                        "label": "Enable Saving Throw"
+                    },
+                    "onEnterSaveAbility": {
+                        "hint": "Which ability is used for the saving throw.",
+                        "label": "Save Ability"
+                    },
+                    "onEnterSaveDC": {
+                        "hint": "DC for the saving throw. Roll data from the source actor is available (e.g. 8+@prof+@abilities.con.mod).",
+                        "label": "Save DC"
+                    },
+                    "onEnterSaveFailEffect": {
+                        "hint": "UUID of an ActiveEffect to apply on a failed save. If blank, a chat message is posted instead.",
+                        "label": "Fail Effect (UUID)"
+                    },
+                    "onEnterDmgDisposition": {
+                        "hint": "Which token dispositions (relative to source) receive the damage.",
+                        "label": "Damage Targets"
+                    },
+                    "onEnterSaveDisposition": {
+                        "hint": "Which token dispositions (relative to source) must make the saving throw.",
+                        "label": "Save Targets"
                     }
                 }
             }
@@ -118,7 +158,11 @@
             "Legend": "On-Enter Healing",
             "UsesRemaining": "Uses Remaining",
             "ResetUsesHint": "Reset the uses counter back to maximum.",
-            "UsesExhausted": "Aura \"{effect}\" has no uses remaining and will no longer heal."
+            "UsesExhausted": "Aura \"{effect}\" has no uses remaining and will no longer heal.",
+            "HealLegend": "Healing",
+            "DmgLegend": "Damage",
+            "SaveLegend": "Saving Throw",
+            "VisualizationLegend": "Visualization"
         },
         "SETTINGS": {
             "DefaultVisibility": {

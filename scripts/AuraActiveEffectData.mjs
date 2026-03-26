@@ -54,16 +54,7 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
       showRadius: new BooleanField({ initial: false }),
 
       // --- On-Enter Effect fields ---
-      onEnterFormula: new StringField({ initial: "" }),
       onEnterEnabled: new BooleanField({ initial: false }),
-      onEnterHealType: new StringField({
-        initial: "hp",
-        choices: {
-          hp: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.hp",
-          temp: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.temp"
-        }
-      }),
-      // Default FRIENDLY so Healing Spirit works out of the box
       onEnterDisposition: new NumberField({
         initial: DISPOSITIONS.FRIENDLY,
         choices: {
@@ -73,11 +64,64 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
         }
       }),
       onEnterUsesMax: new StringField({ initial: "" }),
-      // -1 = uninitialised (treated as full). Actual decrement happens in onEnterHealing.mjs.
       onEnterUsesRemaining: new NumberField({ initial: -1, integer: true }),
       onEnterScript: new JavaScriptField(),
-      // Whether the aura source token itself can receive the on-enter heal on its own turn
-      onEnterApplyToSelf: new BooleanField({ initial: false })
+      onEnterApplyToSelf: new BooleanField({ initial: false }),
+
+      // Healing
+      onEnterHealEnabled: new BooleanField({ initial: false }),
+      onEnterHealFormula: new StringField({ initial: "" }),
+      onEnterHealType: new StringField({
+        initial: "hp",
+        choices: {
+          hp: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.hp",
+          temp: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.temp"
+        }
+      }),
+
+      // Damage
+      onEnterDmgEnabled: new BooleanField({ initial: false }),
+      onEnterDmgFormula: new StringField({ initial: "" }),
+      onEnterDmgType: new StringField({
+        initial: "fire",
+        choices: {
+          acid: "DND5E.DamageAcid", bludgeoning: "DND5E.DamageBludgeoning",
+          cold: "DND5E.DamageCold", fire: "DND5E.DamageFire",
+          force: "DND5E.DamageForce", lightning: "DND5E.DamageLightning",
+          necrotic: "DND5E.DamageNecrotic", piercing: "DND5E.DamagePiercing",
+          poison: "DND5E.DamagePoison", psychic: "DND5E.DamagePsychic",
+          radiant: "DND5E.DamageRadiant", slashing: "DND5E.DamageSlashing",
+          thunder: "DND5E.DamageThunder"
+        }
+      }),
+
+      // Saving throw
+      onEnterSaveEnabled: new BooleanField({ initial: false }),
+      onEnterSaveAbility: new StringField({
+        initial: "con",
+        choices: {
+          str: "DND5E.AbilityStr", dex: "DND5E.AbilityDex", con: "DND5E.AbilityCon",
+          int: "DND5E.AbilityInt", wis: "DND5E.AbilityWis", cha: "DND5E.AbilityCha"
+        }
+      }),
+      onEnterSaveDC: new StringField({ initial: "8+@prof+@abilities.con.mod" }),
+      onEnterSaveFailEffect: new StringField({ initial: "" }),
+      onEnterDmgDisposition: new NumberField({
+        initial: DISPOSITIONS.HOSTILE,
+        choices: {
+          [DISPOSITIONS.HOSTILE]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Hostile",
+          [DISPOSITIONS.ANY]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Any",
+          [DISPOSITIONS.FRIENDLY]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Friendly"
+        }
+      }),
+      onEnterSaveDisposition: new NumberField({
+        initial: DISPOSITIONS.HOSTILE,
+        choices: {
+          [DISPOSITIONS.HOSTILE]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Hostile",
+          [DISPOSITIONS.ANY]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Any",
+          [DISPOSITIONS.FRIENDLY]: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.disposition.Choices.Friendly"
+        }
+      })
     }
   }
 
@@ -96,7 +140,11 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
   }
 
   get hasOnEnterEffect() {
-    return this.onEnterEnabled && !!this.onEnterFormula?.trim();
+    return this.onEnterEnabled && (
+      (this.onEnterHealEnabled && !!this.onEnterHealFormula?.trim()) ||
+      (this.onEnterDmgEnabled  && !!this.onEnterDmgFormula?.trim()) ||
+      this.onEnterSaveEnabled
+    );
   }
 
   get maxUses() {

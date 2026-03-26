@@ -1,300 +1,319 @@
 /**
  * onEnterHealing.mjs
+ * On-enter effects: heal / damage (with resistances) / saving throw (auto-rolled per token).
  *
- * Triggers a roll-and-heal when a token enters or starts its turn inside an aura
- * that has `onEnterEnabled = true`.
- *
- * === Trigger rules ===
- *
- * IN COMBAT:
- *   • A token may be healed at most ONCE per [round+turn] per [sourceEffect].
- *   • The trigger fires when:
- *       (a) The token MOVES INTO the zone during any turn (move trigger).
- *       (b) The token STARTS ITS OWN TURN already inside the zone (turn-start trigger).
- *   • If both (a) and (b) would fire in the same round+turn slot, only the
- *     first one counts.  The key is  `combatId|round|turn|tokenId|effectId`.
- *
- * OUT OF COMBAT:
- *   • Fires on every entry into the zone (no per-turn limiting).
- *   • We still prevent a double-fire from the same single movement segment by
- *     tracking movement-session keys that are cleared after a short timeout.
+ * IN COMBAT:  once per [round+turn+tokenId+effectId], cleared on turn change.
+ * OUT OF COMBAT: once per movement segment (500ms cooldown per tokenId+effectId).
  */
 
-import { getAllAuraEffects, getNearbyTokens, getTokenToTokenDistance } from "./helpers.mjs";
-import { DISPOSITIONS } from "./constants.mjs";
+import {getAllAuraEffects, getNearbyTokens, getTokenToTokenDistance} from "./helpers.mjs";
+import {DISPOSITIONS} from "./constants.mjs";
 
-// ─── Dedup stores ────────────────────────────────────────────────────────────
+// ─── Dedup ───────────────────────────────────────────────────────────────────
 
-/**
- * In-combat dedup: `combatId|round|turn|tokenId|effectId`
- * Cleared at the start of each new combat turn (combatTurnChange hook).
- */
 const inCombatTriggered = new Set();
-
-/**
- * Out-of-combat dedup: `tokenId|effectId`
- * Entries are added when a move fires, then removed after a short delay so that
- * a token that leaves and re-enters later still triggers again.
- * (We can't use movement origin alone because multiple waypoints share one hook call.)
- */
 const outOfCombatTriggered = new Set();
-const OUT_OF_COMBAT_COOLDOWN_MS = 500; // same movement segment grace window
+const OUT_OF_COMBAT_COOLDOWN_MS = 500;
 
-// ─── Key helpers ─────────────────────────────────────────────────────────────
-
-function combatKey(effectId, tokenId) {
-  const c = game.combat;
-  return `${c.id}|${c.round}|${c.turn}|${tokenId}|${effectId}`;
-}
-
-function moveKey(effectId, tokenId) {
-  return `${tokenId}|${effectId}`;
-}
-
-/**
- * Returns true if this trigger should be skipped (already fired this slot).
- * Also registers the key so subsequent calls are blocked.
- */
 function isDuplicate(effectId, tokenId) {
-  if (game.combat?.active) {
-    const key = combatKey(effectId, tokenId);
-    if (inCombatTriggered.has(key)) return true;
-    inCombatTriggered.add(key);
-    return false;
-  } else {
-    const key = moveKey(effectId, tokenId);
+    if (game.combat?.active) {
+        const c = game.combat;
+        const key = `${c.id}|${c.round}|${c.turn}|${tokenId}|${effectId}`;
+        if (inCombatTriggered.has(key)) return true;
+        inCombatTriggered.add(key);
+        return false;
+    }
+    const key = `${tokenId}|${effectId}`;
     if (outOfCombatTriggered.has(key)) return true;
     outOfCombatTriggered.add(key);
     setTimeout(() => outOfCombatTriggered.delete(key), OUT_OF_COMBAT_COOLDOWN_MS);
     return false;
-  }
 }
 
-// ─── Disposition check ───────────────────────────────────────────────────────
+// Pending save fails: when a save button is clicked and fails, apply the effect
+const pendingSaveFails = new Map();
 
-function passesDisposition(sourceToken, targetToken, requiredDisposition) {
-  if (requiredDisposition === DISPOSITIONS.ANY) return true;
-  const rel = sourceToken.disposition * targetToken.disposition;
-  if (requiredDisposition === DISPOSITIONS.FRIENDLY) return rel > 0;
-  if (requiredDisposition === DISPOSITIONS.HOSTILE)  return rel < 0;
-  return true;
+// Hook into dnd5e save roll to detect failures
+Hooks.on("dnd5e.rollAbilitySaveV2", async (rolls, data) => {
+    const token = data.subject?.token;
+    if (!token) return;
+    // Find any pending fail entries for this token
+    for (const [key, entry] of pendingSaveFails) {
+        if (!key.startsWith(token.id)) continue;
+        if (rolls[0]?.total < entry.dc) {
+            pendingSaveFails.delete(key);
+            const actor = await fromUuid(entry.targetActorUuid);
+            if (actor) await applyFailEffect(actor, entry.effectRef, entry.sourceEffect);
+        } else {
+            pendingSaveFails.delete(key);
+        }
+    }
+});
+
+// ─── Disposition helpers ──────────────────────────────────────────────────────
+
+function matchesDisposition(sourceToken, targetToken, required) {
+    if (required === DISPOSITIONS.ANY) return true;
+    const rel = sourceToken.disposition * targetToken.disposition;
+    if (required === DISPOSITIONS.FRIENDLY) return rel > 0;
+    if (required === DISPOSITIONS.HOSTILE) return rel < 0;
+    return true;
 }
 
-// ─── Conditional script check ────────────────────────────────────────────────
+// ─── Script filter ────────────────────────────────────────────────────────────
 
 function passesScript(sourceToken, targetToken, effect) {
-  const script = effect.system.onEnterScript?.trim();
-  if (!script) return true;
-  const actor    = targetToken.actor;
-  const rollData = actor?.getRollData?.() ?? {};
-  try {
-    return Function("actor", "token", "sourceToken", "rollData",
-      `return Boolean(${script});`
-    ).call(null, actor, targetToken.object ?? targetToken, sourceToken.object ?? sourceToken, rollData);
-  } catch (e) {
-    console.error(`Aura Effects | onEnterScript error for "${effect.name}":`, e);
-    return true;
-  }
-}
-
-// ─── Core: roll and apply ────────────────────────────────────────────────────
-
-async function applyOnEnterHealing(sourceEffect, targetActor, sourceToken, targetToken) {
-  const sys = sourceEffect.system;
-  if (!sys.hasOnEnterEffect) return;
-
-  // ── Uses check ──
-  const remaining = sys.remainingUses;
-  if (remaining <= 0) {
-    // Silent — no notification spam. Uses are just exhausted.
-    return;
-  }
-
-  // ── Roll ──
-  const roll = await new Roll(
-    sys.onEnterFormula,
-    sourceEffect.parent?.getRollData?.() ?? {}
-  ).evaluate();
-
-  const healTypeLabel = sys.onEnterHealType === "temp"
-    ? game.i18n.localize("AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.temp")
-    : game.i18n.localize("AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.hp");
-
-  await roll.toMessage({
-    speaker: ChatMessage.getSpeaker({ token: sourceToken }),
-    flavor:  `${sourceEffect.name} → ${targetActor.name} (${healTypeLabel})`
-  });
-
-  // ── Apply ──
-  if (sys.onEnterHealType === "temp") {
-    await applyTempHP(targetActor, roll.total);
-  } else {
-    await applyHP(targetActor, roll.total);
-  }
-
-  // ── Decrement uses ──
-  if (sys.onEnterUsesMax?.trim() && remaining !== Infinity) {
-    // If uninitialised (-1), write maxUses-1 so the counter is now explicit.
-    const newRemaining = (sys.onEnterUsesRemaining < 0 ? sys.maxUses : remaining) - 1;
-    await sourceEffect.update({ "system.onEnterUsesRemaining": newRemaining });
-    if (newRemaining <= 0) {
-      ui.notifications?.info(
-        game.i18n.format("AURAEFFECTS.OnEnter.UsesExhausted", { effect: sourceEffect.name })
-      );
+    const script = effect.system.onEnterScript?.trim();
+    if (!script) return true;
+    try {
+        return Function("actor", "token", "sourceToken", "rollData",
+            `return Boolean(${script});`
+        ).call(null, targetToken.actor,
+            targetToken.object ?? targetToken,
+            sourceToken.object ?? sourceToken,
+            targetToken.actor?.getRollData?.() ?? {});
+    } catch (e) {
+        console.error(`Aura Effects | onEnterScript error for "${effect.name}":`, e);
+        return true;
     }
-  }
 }
 
-// ─── System-agnostic HP helpers ──────────────────────────────────────────────
+// ─── HP helpers ───────────────────────────────────────────────────────────────
 
 async function applyHP(actor, amount) {
-  if (game.system.id === "dnd5e" && typeof actor.applyDamage === "function") {
-    return actor.applyDamage([{ value: amount, type: "healing" }]);
-  }
-  const hp = actor.system?.attributes?.hp ?? actor.system?.hp;
-  if (!hp) return;
-  const path = actor.system?.attributes?.hp !== undefined
-    ? "system.attributes.hp.value"
-    : "system.hp.value";
-  return actor.update({ [path]: Math.min((hp.value ?? 0) + amount, hp.max ?? Infinity) });
+    if (game.system.id === "dnd5e" && typeof actor.applyDamage === "function")
+        return actor.applyDamage([{value: amount, type: "healing"}]);
+    const hp = actor.system?.attributes?.hp ?? actor.system?.hp;
+    if (!hp) return;
+    const path = actor.system?.attributes?.hp !== undefined ? "system.attributes.hp.value" : "system.hp.value";
+    return actor.update({[path]: Math.min((hp.value ?? 0) + amount, hp.max ?? Infinity)});
 }
 
 async function applyTempHP(actor, amount) {
-  if (game.system.id === "dnd5e" && typeof actor.applyTempHP === "function") {
-    return actor.applyTempHP(amount);
-  }
-  const hp = actor.system?.attributes?.hp ?? actor.system?.hp;
-  if (!hp) return;
-  if (amount <= (hp.temp ?? 0)) return; // temp HP never stacks — take the higher
-  const path = actor.system?.attributes?.hp !== undefined
-    ? "system.attributes.hp.temp"
-    : "system.hp.temp";
-  return actor.update({ [path]: amount });
+    if (game.system.id === "dnd5e" && typeof actor.applyTempHP === "function")
+        return actor.applyTempHP(amount);
+    const hp = actor.system?.attributes?.hp ?? actor.system?.hp;
+    if (!hp) return;
+    if (amount <= (hp.temp ?? 0)) return;
+    const path = actor.system?.attributes?.hp !== undefined ? "system.attributes.hp.temp" : "system.hp.temp";
+    return actor.update({[path]: amount});
 }
 
-// ─── Shared: evaluate one source-effect against one target token ─────────────
+// ─── Apply effect by UUID on save fail ───────────────────────────────────────
+
+async function applyFailEffect(targetActor, effectRef, sourceEffect) {
+    let effectData = null;
+    try {
+        const found = await fromUuid(effectRef);
+        if (found instanceof ActiveEffect) effectData = found.toObject();
+    } catch (_) {
+    }
+
+    if (!effectData) {
+        // UUID didn't resolve — post fallback message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker(),
+            content: `<strong>${sourceEffect.name}</strong>: ${targetActor.name} провалил спасбросок — применить эффект: <em>${effectRef}</em>`
+        });
+        return;
+    }
+
+    foundry.utils.mergeObject(effectData, {
+        origin: sourceEffect.uuid,
+        transfer: false,
+        "flags.auraeffects.fromSaveFail": true
+    });
+    await targetActor.createEmbeddedDocuments("ActiveEffect", [effectData]);
+}
+
+// ─── Core: apply all enabled effects to one target ───────────────────────────
+
+async function applyOnEnterEffect(sourceEffect, targetActor, sourceToken, targetToken) {
+    const sys = sourceEffect.system;
+    if (!sys.hasOnEnterEffect) return;
+
+    const remaining = sys.remainingUses;
+    if (remaining <= 0) return;
+
+    const sourceRollData = sourceEffect.parent?.getRollData?.() ?? {};
+    let usedAUse = false;
+
+    // ── 1. Healing ── (uses onEnterDisposition, already checked upstream)
+    if (sys.onEnterHealEnabled && sys.onEnterHealFormula?.trim()) {
+        const roll = await new Roll(sys.onEnterHealFormula, sourceRollData).evaluate();
+        const label = sys.onEnterHealType === "temp"
+            ? game.i18n.localize("AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.temp")
+            : game.i18n.localize("AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterHealType.Choices.hp");
+        await roll.toMessage({
+            speaker: ChatMessage.getSpeaker({token: sourceToken}),
+            flavor: `${sourceEffect.name} → ${targetActor.name} (${label})`
+        });
+        if (sys.onEnterHealType === "temp") await applyTempHP(targetActor, roll.total);
+        else await applyHP(targetActor, roll.total);
+        usedAUse = true;
+    }
+
+    // ── 2. Damage ── (own disposition filter)
+    if (sys.onEnterDmgEnabled && sys.onEnterDmgFormula?.trim()
+        && matchesDisposition(sourceToken, targetToken, sys.onEnterDmgDisposition)) {
+        const roll = await new Roll(sys.onEnterDmgFormula, sourceRollData).evaluate();
+        await roll.toMessage({
+            speaker: ChatMessage.getSpeaker({token: sourceToken}),
+            flavor: `${sourceEffect.name} → ${targetActor.name} (${sys.onEnterDmgType})`
+        });
+        if (game.system.id === "dnd5e" && typeof targetActor.applyDamage === "function") {
+            await targetActor.applyDamage([{value: roll.total, type: sys.onEnterDmgType}]);
+        } else {
+            const hp = targetActor.system?.attributes?.hp ?? targetActor.system?.hp;
+            if (hp) {
+                const path = targetActor.system?.attributes?.hp !== undefined ? "system.attributes.hp.value" : "system.hp.value";
+                await targetActor.update({[path]: Math.max(0, (hp.value ?? 0) - roll.total)});
+            }
+        }
+        usedAUse = true;
+    }
+
+    // ── 3. Saving throw ──
+    if (sys.onEnterSaveEnabled
+        && matchesDisposition(sourceToken, targetToken, sys.onEnterSaveDisposition)) {
+        const dc = Math.round(
+            new Roll(sys.onEnterSaveDC || "8", sourceRollData).evaluateSync({strict: false}).total
+        );
+
+        if (game.system.id === "dnd5e") {
+            // Generates the native dnd5e save button — identical to spell cards
+            const enriched = await TextEditor.enrichHTML(
+                `[[/save ${sys.onEnterSaveAbility} ${dc}]]`,
+                {async: true}
+            );
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({token: sourceToken}),
+                content: `<strong>${sourceEffect.name}</strong> → <strong>${targetActor.name}</strong>: ${enriched}`,
+                flags: {dnd5e: {targets: [{uuid: targetToken.uuid}]}}
+            });
+
+            // Auto-apply fail effect if UUID given — listen via hook since the roll
+            // happens client-side when player clicks the button
+            if (sys.onEnterSaveFailEffect?.trim()) {
+                // Store pending fail effect keyed by target+effect so the hook can pick it up
+                pendingSaveFails.set(`${targetToken.id}|${sourceEffect.id}`, {
+                    targetActorUuid: targetActor.uuid,
+                    effectRef: sys.onEnterSaveFailEffect.trim(),
+                    dc,
+                    ability: sys.onEnterSaveAbility,
+                    sourceEffect
+                });
+            }
+        } else {
+            // Generic fallback for non-dnd5e systems
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({token: sourceToken}),
+                content: `<strong>${sourceEffect.name}</strong>: ${targetActor.name} — спасбросок <strong>${sys.onEnterSaveAbility.toUpperCase()} DC ${dc}</strong>`
+            });
+        }
+        usedAUse = true;
+    }
+
+    // ── Decrement uses ──
+    if (usedAUse && sys.onEnterUsesMax?.trim() && remaining !== Infinity) {
+        const newRemaining = (sys.onEnterUsesRemaining < 0 ? sys.maxUses : remaining) - 1;
+        await sourceEffect.update({"system.onEnterUsesRemaining": newRemaining});
+        if (newRemaining <= 0)
+            ui.notifications?.info(game.i18n.format("AURAEFFECTS.OnEnter.UsesExhausted", {effect: sourceEffect.name}));
+    }
+}
+
+// ─── Shared tryTrigger (checks global disposition + script + dedup) ───────────
 
 async function tryTrigger(sourceEffect, sourceToken, targetToken) {
-  if (!sourceEffect.system.hasOnEnterEffect) return;
-  if (!targetToken.actor) return;
-  if (!passesDisposition(sourceToken, targetToken, sourceEffect.system.onEnterDisposition)) return;
-  if (!passesScript(sourceToken, targetToken, sourceEffect)) return;
-  if (isDuplicate(sourceEffect.id, targetToken.id)) return;
-  await applyOnEnterHealing(sourceEffect, targetToken.actor, sourceToken, targetToken);
+    if (!sourceEffect.system.hasOnEnterEffect) return;
+    if (!targetToken.actor) return;
+    // Global disposition gate (for healing)
+    if (!matchesDisposition(sourceToken, targetToken, sourceEffect.system.onEnterDisposition)) {
+        // Even if healing disposition doesn't match, damage/save might — let applyOnEnterEffect decide per-section
+        // So only skip entirely if ALL sections would fail the global disposition
+        const sys = sourceEffect.system;
+        const dmgWouldRun = sys.onEnterDmgEnabled && matchesDisposition(sourceToken, targetToken, sys.onEnterDmgDisposition);
+        const saveWouldRun = sys.onEnterSaveEnabled && matchesDisposition(sourceToken, targetToken, sys.onEnterSaveDisposition);
+        if (!dmgWouldRun && !saveWouldRun) return;
+    }
+    if (!passesScript(sourceToken, targetToken, sourceEffect)) return;
+    if (isDuplicate(sourceEffect.id, targetToken.id)) return;
+    await applyOnEnterEffect(sourceEffect, targetToken.actor, sourceToken, targetToken);
 }
 
-// ─── Move trigger ────────────────────────────────────────────────────────────
-// Called from auras.mjs → moveToken, AFTER movement animation completes.
+// ─── Move trigger ─────────────────────────────────────────────────────────────
 
 export async function checkOnEnterForMovingToken(token, origin) {
-  if (!token.actor) return;
-  // Only the active GM runs the writes.
-  if (!game.users.activeGM || game.user !== game.users.activeGM) return;
+    if (!token.actor) return;
+    if (!game.users.activeGM || game.user !== game.users.activeGM) return;
 
-  // Case 1: token walked INTO someone else's aura
-  for (const sourceToken of token.parent.tokens) {
-    if (sourceToken === token) continue;
-    if (!sourceToken.actor) continue;
-
-    const [activeEffects] = getAllAuraEffects(sourceToken.actor);
-    for (const effect of activeEffects) {
-      if (!effect.system.hasOnEnterEffect) continue;
-      const sys    = effect.system;
-      const radius = sys.distance;
-      if (!radius) continue;
-
-      const distBefore = getTokenToTokenDistance(sourceToken, token,
-        { originB: origin, collisionTypes: sys.collisionTypes });
-      const distNow    = getTokenToTokenDistance(sourceToken, token,
-        { collisionTypes: sys.collisionTypes });
-
-      // Only fire if the token just crossed from outside → inside
-      if (distBefore <= radius) continue; // was already inside
-      if (distNow    >  radius) continue; // still outside
-
-      await tryTrigger(effect, sourceToken, token);
+    // Token walked INTO someone else's aura
+    for (const sourceToken of token.parent.tokens) {
+        if (sourceToken === token) continue;
+        if (!sourceToken.actor) continue;
+        const [activeEffects] = getAllAuraEffects(sourceToken.actor);
+        for (const effect of activeEffects) {
+            if (!effect.system.hasOnEnterEffect) continue;
+            const {distance: radius, collisionTypes} = effect.system;
+            if (!radius) continue;
+            const distBefore = getTokenToTokenDistance(sourceToken, token, {originB: origin, collisionTypes});
+            const distNow = getTokenToTokenDistance(sourceToken, token, {collisionTypes});
+            if (distBefore <= radius || distNow > radius) continue;
+            await tryTrigger(effect, sourceToken, token);
+        }
     }
-  }
 
-  // Case 2: this token's own aura swept over other tokens as it moved
-  const [ownEffects] = getAllAuraEffects(token.actor);
-  for (const effect of ownEffects) {
-    if (!effect.system.hasOnEnterEffect) continue;
-    const sys    = effect.system;
-    const radius = sys.distance;
-    if (!radius) continue;
-
-    for (const targetToken of token.parent.tokens) {
-      if (targetToken === token) continue;
-      if (!targetToken.actor) continue;
-
-      const distBefore = getTokenToTokenDistance(token, targetToken,
-        { originA: origin, collisionTypes: sys.collisionTypes });
-      const distNow    = getTokenToTokenDistance(token, targetToken,
-        { collisionTypes: sys.collisionTypes });
-
-      if (distBefore <= radius) continue; // target was already inside this aura
-      if (distNow    >  radius) continue; // target still outside
-
-      await tryTrigger(effect, token, targetToken);
+    // This token's own aura swept over others
+    const [ownEffects] = getAllAuraEffects(token.actor);
+    for (const effect of ownEffects) {
+        if (!effect.system.hasOnEnterEffect) continue;
+        const {distance: radius, collisionTypes} = effect.system;
+        if (!radius) continue;
+        for (const targetToken of token.parent.tokens) {
+            if (targetToken === token) continue;
+            if (!targetToken.actor) continue;
+            const distBefore = getTokenToTokenDistance(token, targetToken, {originA: origin, collisionTypes});
+            const distNow = getTokenToTokenDistance(token, targetToken, {collisionTypes});
+            if (distBefore <= radius || distNow > radius) continue;
+            await tryTrigger(effect, token, targetToken);
+        }
     }
-  }
 }
 
-// ─── Turn-start trigger ──────────────────────────────────────────────────────
-// Called from combatTurnChange hook.
-//
-// Rule: on turn start, the token whose turn it is gets healed if it is standing
-// inside another token's aura. The source token does NOT heal everyone in its
-// own aura at the start of its turn — that would be triggered when each of those
-// tokens starts their OWN turn (Case 1 on their respective turns).
+// ─── Turn-start trigger ───────────────────────────────────────────────────────
 
 export async function checkOnTurnStartForToken(combatant) {
-  if (!game.users.activeGM || game.user !== game.users.activeGM) return;
-  const token = combatant.token;
-  if (!token?.actor) return;
+    if (!game.users.activeGM || game.user !== game.users.activeGM) return;
+    const token = combatant.token;
+    if (!token?.actor) return;
 
-  // Case 1: this token starts its turn — check every OTHER token's aura on scene.
-  // If this token is standing inside that aura, it receives the heal.
-  for (const sourceToken of token.parent?.tokens ?? []) {
-    if (!sourceToken.actor) continue;
-
-    const [activeEffects] = getAllAuraEffects(sourceToken.actor);
-    for (const effect of activeEffects) {
-      if (!effect.system.hasOnEnterEffect) continue;
-      const radius = effect.system.distance;
-      if (!radius) continue;
-
-      const isSelf = sourceToken === token;
-
-      // Self-heal: only if onEnterApplyToSelf is enabled
-      if (isSelf) {
-        if (!effect.system.onEnterApplyToSelf) continue;
-        // The token is trivially "in its own aura" — just check script & dedup
-        if (!passesScript(sourceToken, token, effect)) continue;
-        if (isDuplicate(effect.id, token.id)) continue;
-        await applyOnEnterHealing(effect, token.actor, sourceToken, token);
-        continue;
-      }
-
-      // Other token's aura: must be in range
-      const dist = getTokenToTokenDistance(sourceToken, token,
-        { collisionTypes: effect.system.collisionTypes });
-      if (dist > radius) continue;
-
-      await tryTrigger(effect, sourceToken, token);
+    for (const sourceToken of token.parent?.tokens ?? []) {
+        if (!sourceToken.actor) continue;
+        const [activeEffects] = getAllAuraEffects(sourceToken.actor);
+        for (const effect of activeEffects) {
+            if (!effect.system.hasOnEnterEffect) continue;
+            const isSelf = sourceToken === token;
+            if (isSelf) {
+                if (!effect.system.onEnterApplyToSelf) continue;
+                if (!passesScript(sourceToken, token, effect)) continue;
+                if (isDuplicate(effect.id, token.id)) continue;
+                await applyOnEnterEffect(effect, token.actor, sourceToken, token);
+                continue;
+            }
+            const dist = getTokenToTokenDistance(sourceToken, token, {collisionTypes: effect.system.collisionTypes});
+            if (dist > effect.system.distance) continue;
+            await tryTrigger(effect, sourceToken, token);
+        }
     }
-  }
 }
 
-// ─── Hook registration ───────────────────────────────────────────────────────
+// ─── Hook registration ────────────────────────────────────────────────────────
 
 export function registerOnEnterHooks() {
-  Hooks.on("combatTurnChange", async (combat, _prior, current) => {
-    // Clear last-turn's dedup keys so the new turn is a fresh slate
-    inCombatTriggered.clear();
-
-    const combatant = combat.combatants.get(current.combatantId);
-    if (combatant) await checkOnTurnStartForToken(combatant);
-  });
+    Hooks.on("combatTurnChange", async (combat, _prior, current) => {
+        inCombatTriggered.clear();
+        const combatant = combat.combatants.get(current.combatantId);
+        if (combatant) await checkOnTurnStartForToken(combatant);
+    });
 }
