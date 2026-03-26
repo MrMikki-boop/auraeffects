@@ -243,15 +243,20 @@ export async function checkOnEnterForMovingToken(token, origin) {
 
 // ─── Turn-start trigger ──────────────────────────────────────────────────────
 // Called from combatTurnChange hook.
+//
+// Rule: on turn start, the token whose turn it is gets healed if it is standing
+// inside another token's aura. The source token does NOT heal everyone in its
+// own aura at the start of its turn — that would be triggered when each of those
+// tokens starts their OWN turn (Case 1 on their respective turns).
 
 export async function checkOnTurnStartForToken(combatant) {
   if (!game.users.activeGM || game.user !== game.users.activeGM) return;
   const token = combatant.token;
   if (!token?.actor) return;
 
-  // Case 1: token is inside someone else's aura at turn start
+  // Case 1: this token starts its turn — check every OTHER token's aura on scene.
+  // If this token is standing inside that aura, it receives the heal.
   for (const sourceToken of token.parent?.tokens ?? []) {
-    if (sourceToken === token) continue;
     if (!sourceToken.actor) continue;
 
     const [activeEffects] = getAllAuraEffects(sourceToken.actor);
@@ -260,28 +265,24 @@ export async function checkOnTurnStartForToken(combatant) {
       const radius = effect.system.distance;
       if (!radius) continue;
 
+      const isSelf = sourceToken === token;
+
+      // Self-heal: only if onEnterApplyToSelf is enabled
+      if (isSelf) {
+        if (!effect.system.onEnterApplyToSelf) continue;
+        // The token is trivially "in its own aura" — just check script & dedup
+        if (!passesScript(sourceToken, token, effect)) continue;
+        if (isDuplicate(effect.id, token.id)) continue;
+        await applyOnEnterHealing(effect, token.actor, sourceToken, token);
+        continue;
+      }
+
+      // Other token's aura: must be in range
       const dist = getTokenToTokenDistance(sourceToken, token,
         { collisionTypes: effect.system.collisionTypes });
       if (dist > radius) continue;
 
       await tryTrigger(effect, sourceToken, token);
-    }
-  }
-
-  // Case 2: it's the aura-source token's own turn — heal everyone in its aura
-  const [ownEffects] = getAllAuraEffects(token.actor);
-  for (const effect of ownEffects) {
-    if (!effect.system.hasOnEnterEffect) continue;
-    const radius = effect.system.distance;
-    if (!radius) continue;
-
-    const nearby = getNearbyTokens(token, radius, {
-      disposition:    effect.system.onEnterDisposition,
-      collisionTypes: effect.system.collisionTypes
-    });
-    for (const targetToken of nearby) {
-      if (targetToken === token) continue;
-      await tryTrigger(effect, token, targetToken);
     }
   }
 }

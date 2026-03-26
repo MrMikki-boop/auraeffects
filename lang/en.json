@@ -91,6 +91,10 @@
                     "onEnterScript": {
                         "hint": "Optional JS expression: if true (or blank) the entering token receives healing. Same variables as Conditional Script. Example to exclude undead & constructs: ![\"undead\",\"construct\"].includes(actor.system.details?.type?.value)",
                         "label": "Heal Condition"
+                    },
+                    "onEnterApplyToSelf": {
+                        "hint": "If enabled, the aura source token will also receive the on-enter heal at the start of its own turn.",
+                        "label": "Heal Self (on own turn)"
                     }
                 }
             }

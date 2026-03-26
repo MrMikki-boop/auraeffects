@@ -26,7 +26,7 @@
 
         {{formGroup fields.onEnterEnabled value=source.system.onEnterEnabled rootId=rootId}}
 
-        {{#if source.system.onEnterEnabled}}
+        {{source.system.onEnterEnabled}}
             {{formGroup fields.onEnterFormula value=source.system.onEnterFormula rootId=rootId}}
             {{formGroup fields.onEnterHealType value=source.system.onEnterHealType localize=true rootId=rootId}}
             {{formGroup fields.onEnterDisposition value=source.system.onEnterDisposition localize=true rootId=rootId}}
@@ -42,7 +42,7 @@
                     </div>
                 </div>
             {{/if}}
+            {{formGroup fields.onEnterApplyToSelf value=source.system.onEnterApplyToSelf rootId=rootId}}
             {{formGroup fields.onEnterScript value=source.system.onEnterScript rootId=rootId}}
-        {{/if}}
     </fieldset>
 </section>

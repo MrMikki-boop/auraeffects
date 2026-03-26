@@ -75,7 +75,9 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
       onEnterUsesMax: new StringField({ initial: "" }),
       // -1 = uninitialised (treated as full). Actual decrement happens in onEnterHealing.mjs.
       onEnterUsesRemaining: new NumberField({ initial: -1, integer: true }),
-      onEnterScript: new JavaScriptField()
+      onEnterScript: new JavaScriptField(),
+      // Whether the aura source token itself can receive the on-enter heal on its own turn
+      onEnterApplyToSelf: new BooleanField({ initial: false })
     }
   }
 
