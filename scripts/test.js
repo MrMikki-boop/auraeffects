@@ -1,5 +1,5 @@
 // ============================================================
-// ПЕПЕРБОКС — Foundry v13
+// 🔫 ПЕПЕРБОКС — Foundry v13
 // Урон: 1d4 × 3 | Дистанция: 30/90 | Осечка: ≤3
 // ============================================================
 
@@ -31,10 +31,10 @@ function getDistance(t) {
 }
 
 // ============================================================
-// 🎲 ROLL → toMessage
-// Foundry v13 + Dice So Nice: НЕ вызываем showForRoll вручную.
-// DSN перехватывает toMessage() через хук и сам показывает
-// анимацию до появления результата в чате.
+// 🎲 ROLL → Dice So Nice → toMessage
+// Порядок: evaluate → showForRoll (ждём конца анимации) →
+// toMessage (DSN видит бросок уже показанным и не дублирует).
+// Сообщения о попадании/промахе появятся только после анимации.
 // ============================================================
 async function rollAndSend(formula, rollData = {}, flavor = "") {
     const roll = await new Roll(formula, rollData).evaluate();
@@ -233,15 +233,14 @@ const lastUse = actor.getFlag("world", "ash_barrel_turn");
 
 if (lastUse !== turnId) {
     useAshBarrel = await confirm(
-        "🔥 Особая подготовка",
-        "<p style='text-align:center; font-size:16px;'>Использовать <b>Пепел в стволе</b>?</p>"
+        "Пепел в стволе",
+        "<p>🔥 Использовать <b>Пепел в стволе</b>?</p>"
     );
-    // Флаг сохранится, и в рамках одного хода диалог больше не вылезет
     if (useAshBarrel) await actor.setFlag("world", "ash_barrel_turn", turnId);
 }
 
 // ============================================================
-// ОСНОВНОЙ ЦИКЛ ВЫСТРЕЛОВ
+// 🔫 ОСНОВНОЙ ЦИКЛ ВЫСТРЕЛОВ
 // ============================================================
 outer:
     for (const entry of selections) {
@@ -297,16 +296,13 @@ outer:
             }
 
             // --- Бросок атаки ---
-            const attack = await rollAndSend(formula, actor.getRollData(), "");
-            // const d20    = attack.terms[0].results.find(r => r.active)?.result
-            //     ?? attack.terms[0].results[0].result;
-            const d20Term = attack.dice?.find(d => d.faces === 20);
-            const d20 = d20Term?.results.find(r => r.active)?.result ?? d20Term?.results[0]?.result;
+            const attack = await rollAndSend(formula, actor.getRollData(), flavorParts.join(" · "));
+            const d20    = attack.terms[0].results.find(r => r.active)?.result
+                ?? attack.terms[0].results[0].result;
 
             // ==========================================================
             // 💥 ОСЕЧКА
             // ==========================================================
-
             if (d20 <= MISFIRE) {
 
                 // Спрашиваем — как в оригинале
@@ -359,25 +355,39 @@ outer:
                 });
 
                 if (m === 1) {
+                    // 💣 Взрыв — урон стрелку, оружие уничтожено (стрельба прекращается)
                     const dmg = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "💣 Взрыв — урон стрелку");
                     await MidiQOL.applyTokenDamage([{ damage: dmg.total, type: "piercing" }], dmg.total, new Set([token]));
+                    weaponJammed = true; // оружие уничтожено — дальнейшая стрельба невозможна
+                    break outer;
 
                 } else if (m === 2) {
+                    // 🔥 Обратный выброс — половина урона стрелку, оружие заклинило
                     const dmg  = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "🔥 Обратный выброс — урон стрелку");
                     const half = Math.floor(dmg.total / 2);
                     await MidiQOL.applyTokenDamage([{ damage: half, type: "piercing" }], half, new Set([token]));
+                    weaponJammed = true; // оружие заклинило — дальнейшая стрельба невозможна
+                    ChatMessage.create({
+                        content: `<div style="background:#1a1a1a; border:1px solid #ff922b;
+                                padding:10px; border-radius:10px; color:#f1f3f5;">
+            🔥 <b>Оружие заклинило!</b> Дальнейшая стрельба невозможна.
+          </div>`
+                    });
+                    break outer;
 
                 } else if (m === 3) {
+                    // 💨 Забитый ствол — требуется действие, стрельба прекращается
                     weaponJammed = true;
                     ChatMessage.create({
                         content: `<div style="background:#1a1a1a; border:1px solid #ff922b;
                                 padding:10px; border-radius:10px; color:#f1f3f5;">
-            💨 <b>Ствол забит!</b> Оружие не стреляет. Требуется действие.
+            💨 <b>Ствол забит!</b> Оружие не стреляет. Требуется действие на починку.
           </div>`
                     });
                     break outer;
 
                 } else if (m === 4) {
+                    // ⚙️ Частичная осечка — повторная атака с помехой, урон половинный если попал
                     const disAtk = await rollAndSend(
                         `2d20kl1 + @abilities.dex.mod + @prof`, actor.getRollData(),
                         `⚙️ Осечка — атака с помехой по ${entry.target.name}`
@@ -387,17 +397,48 @@ outer:
                         const dmg  = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "⚙️ Осечка — урон (половина)");
                         const half = Math.floor(dmg.total / 2);
                         await MidiQOL.applyTokenDamage([{ damage: half, type: "piercing" }], half, new Set([entry.target]));
+                    } else {
+                        ChatMessage.create({
+                            content: `<div style="background:#1a1a1a; border:1px solid #444;
+                                  padding:8px; border-radius:8px; color:#f1f3f5;">
+              ❌ Промах (осечка с помехой) по <b>${entry.target.name}</b>
+            </div>`
+                        });
                     }
 
                 } else if (m === 5) {
-                    const dmg  = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "⚡ Нестабильный — урон (половина)");
-                    const half = Math.floor(dmg.total / 2);
-                    await MidiQOL.applyTokenDamage([{ damage: half, type: "piercing" }], half, new Set([entry.target]));
+                    // ⚡ Нестабильный выстрел — атака проходит (по правилам), урон вдвое меньше
+                    // Проверяем AC оригинальным броском атаки (который уже был)
+                    const ac = entry.target.actor.system.attributes.ac.value;
+                    if (attack.total >= ac) {
+                        const dmg  = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "⚡ Нестабильный — урон (половина)");
+                        const half = Math.floor(dmg.total / 2);
+                        await MidiQOL.applyTokenDamage([{ damage: half, type: "piercing" }], half, new Set([entry.target]));
+                    } else {
+                        ChatMessage.create({
+                            content: `<div style="background:#1a1a1a; border:1px solid #444;
+                                  padding:8px; border-radius:8px; color:#f1f3f5;">
+              ❌ Промах (нестабильный выстрел) по <b>${entry.target.name}</b>
+            </div>`
+                        });
+                    }
 
                 } else if (m === 6) {
-                    disadvantageNext = true;
-                    const dmg = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "😈 Удачный срыв — урон");
-                    await MidiQOL.applyTokenDamage([{ damage: dmg.total, type: "piercing" }], dmg.total, new Set([entry.target]));
+                    // 😈 Удачный срыв — атака проходит (по правилам), следующая с помехой
+                    // Проверяем AC оригинальным броском
+                    const ac = entry.target.actor.system.attributes.ac.value;
+                    if (attack.total >= ac) {
+                        const dmg = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "😈 Удачный срыв — урон");
+                        await MidiQOL.applyTokenDamage([{ damage: dmg.total, type: "piercing" }], dmg.total, new Set([entry.target]));
+                    } else {
+                        ChatMessage.create({
+                            content: `<div style="background:#1a1a1a; border:1px solid #444;
+                                  padding:8px; border-radius:8px; color:#f1f3f5;">
+              ❌ Промах (удачный срыв) по <b>${entry.target.name}</b>
+            </div>`
+                        });
+                    }
+                    disadvantageNext = true; // следующая атака в любом случае с помехой
                 }
 
                 continue; // осечка обработана
