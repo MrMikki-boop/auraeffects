@@ -398,7 +398,7 @@ async function processHit(hit, isCrit, target, ashEnabled, halveDamage = false) 
             name: "Ослеплён (Пепел в стволе)", icon: "icons/svg/blind.svg", duration: {rounds: 1}, statuses: ["blinded"]
         }]);
         ChatMessage.create({
-            content: `<div style="background:#1a1a1a; border:1px solid #ffd43b;padding:8px; border-radius:8px; color:#f1f3f5;">👁️ <b>${target.name}</b> ослеплён (Пепел в стволе, 1 раунд).</div>`
+            content: `<div style="background:#1a1a1a; border:1px solid #ffd43b; padding:8px; border-radius:8px; color:#f1f3f5;">👁️ <b>${target.name}</b> ослеплён (Пепел в стволе, 1 раунд).</div>`
         });
     }
 }
