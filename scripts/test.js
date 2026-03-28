@@ -288,7 +288,7 @@ outer:
 
                 // ОБРАБОТКА ПОСЛЕДСТВИЙ ОСЕЧКИ
                 if (m === 1) {
-                    const dmg = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "💣 Взрыв — урон стрелку");
+                    const dmg = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "💣 Взрыв: вы получаете урон, оружие ломается");
                     await MidiQOL.applyTokenDamage([{
                         damage: dmg.total,
                         type: "piercing"
@@ -296,18 +296,18 @@ outer:
                     weaponJammed = true;
                     break outer;
                 } else if (m === 2) {
-                    const dmg = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "🔥 Обратный выброс — урон стрелку");
+                    const dmg = await rollAndSend("1d4 + @abilities.dex.mod", actor.getRollData(), "🔥 Обратный выброс: вы получаете половину урона, оружие заклинило");
                     const half = Math.max(1, Math.floor(dmg.total / 2));
                     await MidiQOL.applyTokenDamage([{damage: half, type: "piercing"}], half, new Set([token]));
                     weaponJammed = true;
                     break outer;
                 } else if (m === 3) {
                     weaponJammed = true;
-                    ChatMessage.create({content: `<div style="background:#1a1a1a; border:1px solid #ff922b; padding:10px; border-radius:10px; color:#f1f3f5;">💨 <b>Ствол забит!</b> Оружие не стреляет.</div>`});
+                    ChatMessage.create({content: `<div style="background:#1a1a1a; border:1px solid #ff922b; padding:10px; border-radius:10px; color:#f1f3f5;">💨 <b>Ствол забит!</b> Требуется действие на починку.</div>`});
                     break outer;
                 } else if (m === 4) {
                     // Новая атака с помехой. Если попадет - урон пополам
-                    const disAtk = await rollAndSend(`2d20kl1 + @abilities.dex.mod + @prof`, actor.getRollData(), `⚙️ Осечка — атака с помехой по ${entry.target.name}`);
+                    const disAtk = await rollAndSend(`2d20kl1 + @abilities.dex.mod + @prof`, actor.getRollData(), `⚙️ Осечка — атака с помехой по ${entry.target.name}, урон половинный`);
                     const ac = entry.target.actor.system.attributes.ac.value;
                     const d20m4 = disAtk.dice?.find(d => d.faces === 20)?.results.find(r => r.active)?.result;
                     const isCritM4 = d20m4 >= critThreshold;
