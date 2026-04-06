@@ -40,6 +40,7 @@ async function applyAuraEffects(actorToEffectsMap) {
           transfer: false,
           "flags.auraeffects.fromAura": true
         });
+        delete effectData.system;
         if (!effect.system.canStack) {
           const bestValue = new Roll(effect.system.bestFormula.trim() || "0", effect.parent?.getRollData?.()).evaluateSync().total;
           foundry.utils.setProperty(effectData, "flags.auraeffects.bestValue", bestValue);

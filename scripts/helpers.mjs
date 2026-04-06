@@ -145,6 +145,7 @@ function getAllAuraEffects(actor) {
   if (!actor) console.warn("Aura Effects: Actorless tokens are not supported and will be ignored.");
   for (const effect of actor?.allApplicableEffects() ?? []) {
     if (effect.type !== "auraeffects.aura") continue;
+    if (effect.flags?.auraeffects?.fromAura) continue;
     if (!effect.disabled && !effect.isSuppressed) activeAuras.push(effect);
     else inactiveAuras.push(effect);
   }
