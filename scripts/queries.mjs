@@ -9,7 +9,7 @@ const gmQueue = new foundry.utils.Semaphore();
 async function deleteEffects({ effectUuids }) {
   const disableAnimation = game.settings.get("auraeffects", "disableScrollingText");
   await gmQueue.add(() => {
-    const effects = new Set(effectUuids.map(uuid => fromUuidSync(uuid))).filter(e => e instanceof ActiveEffect);
+    const effects = Array.from(new Set(effectUuids.map(uuid => fromUuidSync(uuid)))).filter(e => e instanceof ActiveEffect);
     return Promise.all(effects.map(e => e.delete({ animate: !disableAnimation })));
   });
   return true;
@@ -27,12 +27,13 @@ async function applyAuraEffects(actorToEffectsMap) {
   await gmQueue.add(() => {
     return Promise.all(Object.entries(actorToEffectsMap).map(([actorUuid, effectUuids]) => {
       const actor = fromUuidSync(actorUuid);
+      if (!(actor instanceof Actor)) return true;
       const allEffects = actor.appliedEffects;
       const effectsToDelete = [];
       const effects = effectUuids.map(uuid => {
         if (allEffects.some(e => e.origin === uuid)) return null;
         const effect = fromUuidSync(uuid);
-        if (!effect) return null;
+        if (!(effect instanceof ActiveEffect)) return null;
         const effectData = foundry.utils.mergeObject(effect.toObject(), {
           name: effect.system.overrideName?.trim() || effect.name,
           origin: uuid,

@@ -4,31 +4,31 @@
             "Aura": {
                 "FIELDS": {
                     "applyToSelf": {
-                        "hint": "If enabled this aura will apply to the source token.",
+                        "hint": "Apply the aura to its source.",
                         "label": "Apply to Self"
                     },
                     "bestFormula": {
-                        "hint": "A formula to evaluate with the source actor's roll data to determine the most powerful effect in a non-stacking situation. If left blank, first-come, first-serve.",
+                        "hint": "Strength formula for non-stacking auras.",
                         "label": "\"Best\" Formula"
                     },
                     "canStack": {
-                        "hint": "If enabled, other auras of the same name can apply at the same time to any applicable tokens.",
+                        "hint": "Allow multiple matching auras.",
                         "label": "Aura Can Stack"
                     },
                     "collisionTypes": {
-                        "hint": "Which, if any, types of wall will stop this aura.",
+                        "hint": "Wall types that block the aura.",
                         "label": "Collision Types"
                     },
                     "color": {
-                        "hint": "If blank, will inherit User color (or GM's color, if no user has the actor set as their character).",
+                        "hint": "Aura visualization color.",
                         "label": "Color"
                     },
                     "combatOnly": {
-                        "hint": "If enabled, this effect will be suppressed outside of combat.",
+                        "hint": "Only active in combat.",
                         "label": "Combat Only"
                     },
                     "disableOnHidden": {
-                        "hint": "If enabled, this effect will be suppressed while the token it is on is hidden.",
+                        "hint": "Disable while the source is hidden.",
                         "label": "Disable While Hidden"
                     },
                     "disposition": {
@@ -37,39 +37,48 @@
                             "Friendly": "Friendly",
                             "Hostile": "Hostile"
                         },
-                        "hint": "Which token dispositions (relative to the source token) this aura will apply to.",
+                        "hint": "Who the aura applies to.",
                         "label": "Disposition"
                     },
                     "distanceFormula": {
-                        "hint": "Specifies the radius that this aura extends to (roll data is accepted).",
+                        "hint": "Aura radius.",
                         "label": "Distance"
                     },
                     "evaluatePreApply": {
-                        "hint": "If enabled, change values will be evaluated prior to effect application, using the source actor's roll data if necessary.",
+                        "hint": "Evaluate changes before applying.",
                         "label": "Evaluate Changes Early"
                     },
                     "opacity": {
-                        "hint": "How opaque or transparent the aura should appear.",
+                        "hint": "Visualization opacity.",
                         "label": "Opacity"
                     },
                     "overrideName": {
-                        "hint": "What name the applied effect should have (leave blank to use base effect's name).",
+                        "hint": "Name of the applied effect.",
                         "label": "Effect Name"
                     },
                     "script": {
-                        "hint": "An expression which, if true (or blank) means the aura should apply.",
+                        "hint": "Aura application condition.",
                         "label": "Conditional Script"
                     },
                     "showRadius": {
-                        "hint": "Whether to display aura borders for every user.",
+                        "hint": "Show radius to all users.",
                         "label": "Show Radius"
                     },
                     "onEnterEnabled": {
-                        "hint": "Master switch. Enable on-enter effects (heal / damage / save) for this aura.",
+                        "hint": "Enable on-enter effects.",
                         "label": "Enable On-Enter Effects"
                     },
+                    "onEnterTrigger": {
+                        "hint": "When on-enter effects trigger.",
+                        "label": "Trigger Timing",
+                        "Choices": {
+                            "both": "Movement and Turn Start",
+                            "movement": "Movement Only",
+                            "turn": "Turn Start Only"
+                        }
+                    },
                     "onEnterHealType": {
-                        "hint": "Restore normal HP or apply temporary HP.",
+                        "hint": "Normal or temporary HP.",
                         "label": "Heal Type",
                         "Choices": {
                             "hp": "Hit Points",
@@ -77,64 +86,111 @@
                         }
                     },
                     "onEnterDisposition": {
-                        "hint": "Which token dispositions (relative to the source token) are affected by on-enter healing. Defaults to Friendly.",
+                        "hint": "Who receives on-enter healing.",
                         "label": "Heal Targets"
                     },
                     "onEnterUsesMax": {
-                        "hint": "Maximum number of times this healing can trigger before being exhausted. Leave blank for unlimited. Roll data accepted (e.g. 1+@abilities.wis.mod).",
+                        "hint": "Trigger limit. Blank means unlimited.",
                         "label": "Max Uses"
                     },
                     "onEnterScript": {
-                        "hint": "Optional JS expression: if true (or blank) the entering token receives healing. Same variables as Conditional Script. Example to exclude undead & constructs: ![\"undead\",\"construct\"].includes(actor.system.details?.type?.value)",
-                        "label": "Heal Condition"
+                        "hint": "Condition for on-enter effects.",
+                        "label": "Trigger Condition"
                     },
                     "onEnterApplyToSelf": {
-                        "hint": "If enabled, the aura source token will also receive the on-enter heal at the start of its own turn.",
-                        "label": "Heal Self (on own turn)"
+                        "hint": "Allow triggering on the source.",
+                        "label": "Affect Self (on own turn)"
                     },
                     "onEnterHealEnabled": {
-                        "hint": "Roll the formula below and restore HP (or apply temp HP) to the token.",
+                        "hint": "Restore HP on entry.",
                         "label": "Enable Healing"
                     },
                     "onEnterHealFormula": {
-                        "hint": "Dice formula for healing (e.g. 1d6, 2d6+@abilities.wis.mod).",
+                        "hint": "Healing formula.",
                         "label": "Heal Formula"
                     },
                     "onEnterDmgEnabled": {
-                        "hint": "Roll the formula below and deal damage (with resistances/immunities via dnd5e applyDamage).",
+                        "hint": "Deal damage on entry.",
                         "label": "Enable Damage"
                     },
                     "onEnterDmgFormula": {
-                        "hint": "Dice formula for damage (e.g. 2d4, 1d6+@abilities.int.mod).",
+                        "hint": "Damage formula.",
                         "label": "Damage Formula"
                     },
                     "onEnterDmgType": {
-                        "hint": "Damage type — used for resistance/immunity checks in dnd5e.",
+                        "hint": "Damage type.",
                         "label": "Damage Type"
                     },
                     "onEnterSaveEnabled": {
-                        "hint": "Prompt an ability saving throw for the token. On failure, optionally apply an effect.",
+                        "hint": "Request a save on entry.",
                         "label": "Enable Saving Throw"
                     },
+                    "onEnterSaveMode": {
+                        "hint": "Chat request or automatic roll.",
+                        "label": "Save Mode",
+                        "Choices": {
+                            "prompt": "Post Chat Request",
+                            "auto": "Roll Immediately"
+                        }
+                    },
                     "onEnterSaveAbility": {
-                        "hint": "Which ability is used for the saving throw.",
+                        "hint": "Saving throw ability.",
                         "label": "Save Ability"
                     },
                     "onEnterSaveDC": {
-                        "hint": "DC for the saving throw. Roll data from the source actor is available (e.g. 8+@prof+@abilities.con.mod).",
+                        "hint": "Saving throw DC.",
                         "label": "Save DC"
                     },
                     "onEnterSaveFailEffect": {
-                        "hint": "UUID of an ActiveEffect to apply on a failed save. If blank, a chat message is posted instead.",
-                        "label": "Fail Effect (UUID)"
+                        "hint": "Legacy failed-save effect UUID.",
+                        "label": "Legacy Fail Effect"
                     },
                     "onEnterDmgDisposition": {
-                        "hint": "Which token dispositions (relative to source) receive the damage.",
+                        "hint": "Who receives damage.",
                         "label": "Damage Targets"
                     },
                     "onEnterSaveDisposition": {
-                        "hint": "Which token dispositions (relative to source) must make the saving throw.",
+                        "hint": "Who makes the save.",
                         "label": "Save Targets"
+                    },
+                    "onEnterSaveFailStatuses": {
+                        "hint": "Statuses applied on failed save.",
+                        "label": "Fail Statuses"
+                    },
+                    "onEnterSaveDmgFormula": {
+                        "hint": "Damage after the saving throw.",
+                        "label": "Save Damage Formula"
+                    },
+                    "onEnterSaveDmgType": {
+                        "hint": "Save damage type.",
+                        "label": "Save Damage Type"
+                    },
+                    "onEnterSaveDmgHalfOnSuccess": {
+                        "hint": "Half damage on successful save.",
+                        "label": "Half Damage on Success"
+                    },
+                    "onEnterSaveSuccessStatuses": {
+                        "hint": "Statuses applied on successful save.",
+                        "label": "Success Statuses"
+                    },
+                    "onEnterSaveStatusDuration": {
+                        "label": "Status Duration",
+                        "hint": "When to remove save-outcome statuses.",
+                        "Choices": {
+                            "manual": "Manual removal",
+                            "rounds": "N rounds",
+                            "untilTurnStart": "Until target turn starts",
+                            "untilTurnEnd": "Until target turn ends",
+                            "whileInAura": "While target remains in aura"
+                        }
+                    },
+                    "onEnterSaveStatusRounds": {
+                        "label": "Status Rounds",
+                        "hint": "How many rounds the status lasts."
+                    },
+                    "onEnterSaveRepeatSaveEndOfTurn": {
+                        "label": "Repeat Save at End of Turn",
+                        "hint": "End of turn: repeat the save; on success, remove the status."
                     }
                 }
             }
@@ -155,14 +211,35 @@
         },
         "NoActiveGM": "Aura Effects will not attempt to function without a GM logged in.",
         "OnEnter": {
-            "Legend": "On-Enter Healing",
+            "Legend": "On-Enter Effects",
             "UsesRemaining": "Uses Remaining",
             "ResetUsesHint": "Reset the uses counter back to maximum.",
-            "UsesExhausted": "Aura \"{effect}\" has no uses remaining and will no longer heal.",
+            "UsesExhausted": "Aura \"{effect}\" has no uses remaining.",
             "HealLegend": "Healing",
             "DmgLegend": "Damage",
             "SaveLegend": "Saving Throw",
-            "VisualizationLegend": "Visualization"
+            "VisualizationLegend": "Visualization",
+            "HealFlavor": "{effect} - healing {actor} ({type})",
+            "DamageFlavor": "{effect} - damage {actor} ({type})",
+            "SavePrompt": "<strong>{effect}</strong>: {actor} must make a <strong>{ability} DC {dc}</strong> saving throw.",
+            "SaveFailManualNote": "On failure, apply manually: <em>{outcomes}</em>",
+            "SaveFailedApplyEffect": "<strong>{effect}</strong>: {actor} failed the saving throw. Apply status/effect: <em>{effectName}</em>",
+            "NoFailEffect": "None",
+            "CustomFailEffect": "Custom UUID: {uuid}",
+            "StatusImmune": "<strong>{effect}</strong>: {actor} is immune to: <em>{statuses}</em>.",
+            "StatusUnsupported": "<strong>{effect}</strong>: {actor} cannot receive these statuses automatically: <em>{statuses}</em>.",
+            "ApplyFailOutcomes": "Apply Failure Outcomes",
+            "FailOutcomesApplied": "Failure Outcomes Applied",
+            "SaveSuccessManualNote": "On success, apply manually: <em>{outcomes}</em>",
+            "ApplySuccessOutcomes": "Apply Success Outcomes",
+            "SuccessOutcomesApplied": "Success Outcomes Applied",
+            "SaveDamageOutcome": "{formula} {type} damage",
+            "SaveDamageFlavor": "{effect} - save damage {actor} ({outcome}, {type}; applying {total})",
+            "SuccessOutcome": "success",
+            "FailureOutcome": "failure",
+            "ApplyOutcomeShort": "Apply",
+            "OutcomeAppliedShort": "Done",
+            "RepeatSaveRemoved": "<strong>{actor}</strong> succeeds on the repeat save and removes <em>{status}</em> from <strong>{effect}</strong>."
         },
         "SETTINGS": {
             "DefaultVisibility": {

@@ -4,31 +4,31 @@
             "Aura": {
                 "FIELDS": {
                     "applyToSelf": {
-                        "hint": "Se habilitado, esta aura será aplicada ao token de origem.",
+                        "hint": "Apply the aura to its source.",
                         "label": "Aplicar a Si Mesmo"
                     },
                     "bestFormula": {
-                        "hint": "Uma fórmula para avaliar com os dados de rolagem do ator de origem para determinar o efeito mais poderoso em uma situação sem acúmulo. Se deixado em branco, será validado por ordem de chegada.",
+                        "hint": "Strength formula for non-stacking auras.",
                         "label": "\"Melhor\" Fórmula"
                     },
                     "canStack": {
-                        "hint": "Se habilitado, outras auras com o mesmo nome podem ser aplicadas ao mesmo tempo a quaisquer tokens aplicáveis.",
+                        "hint": "Allow multiple matching auras.",
                         "label": "Aura Pode Acumular"
                     },
                     "collisionTypes": {
-                        "hint": "Quais tipos de parede, se houver alguma, impedirão essa aura.",
+                        "hint": "Wall types that block the aura.",
                         "label": "Tipos de Colisão"
                     },
                     "color": {
-                        "hint": "Se estiver em branco, herdará a cor do usuário (ou a cor do Mestre, se nenhum usuário tiver o ator definido como seu personagem).",
+                        "hint": "Aura visualization color.",
                         "label": "Cor"
                     },
                     "combatOnly": {
-                        "hint": "Se ativado, este efeito será suprimido fora do combate.",
+                        "hint": "Only active in combat.",
                         "label": "Apenas em Combate"
                     },
                     "disableOnHidden": {
-                        "hint": "Se habilitado, este efeito será suprimido enquanto o token em que ele está, estiver oculto.",
+                        "hint": "Disable while the source is hidden.",
                         "label": "Esconder Se Oculto"
                     },
                     "disposition": {
@@ -37,32 +37,92 @@
                             "Friendly": "Amigável",
                             "Hostile": "Hostil"
                         },
-                        "hint": "A quais disposições de token (em relação ao token de origem) esta aura será aplicada.",
+                        "hint": "Who the aura applies to.",
                         "label": "Disposição"
                     },
                     "distanceFormula": {
-                        "hint": "Especifica o raio em que esta aura se estende (dados de rolagem são aceitos).",
+                        "hint": "Aura radius.",
                         "label": "Distância"
                     },
                     "evaluatePreApply": {
-                        "hint": "Se habilitado, os valores alterados serão avaliados antes da aplicação do efeito, usando os dados de rolagem do ator de origem, se necessário.",
+                        "hint": "Evaluate changes before applying.",
                         "label": "Avaliar Mudanças Cedo"
                     },
                     "opacity": {
-                        "hint": "Quão opaca ou transparente a aura deve parecer.",
+                        "hint": "Visualization opacity.",
                         "label": "Opacidade"
                     },
                     "overrideName": {
-                        "hint": "Qual nome o efeito aplicado deve ter (deixe em branco para usar o nome do efeito base).",
+                        "hint": "Name of the applied effect.",
                         "label": "Nome do Efeito"
                     },
                     "script": {
-                        "hint": "Uma expressão que, se verdadeira (ou em branco), significa que a aura deve ser aplicada.",
+                        "hint": "Aura application condition.",
                         "label": "Script Condicional"
                     },
                     "showRadius": {
-                        "hint": "Se deve ou não exibir bordas de aura para cada usuário.",
+                        "hint": "Show radius to all users.",
                         "label": "Mostrar Raio"
+                    },
+                    "onEnterSaveMode": {
+                        "hint": "Chat request or automatic roll.",
+                        "label": "Save Mode",
+                        "Choices": {
+                            "prompt": "Post Chat Request",
+                            "auto": "Roll Immediately"
+                        }
+                    },
+                    "onEnterTrigger": {
+                        "hint": "When on-enter effects trigger.",
+                        "label": "Trigger Timing",
+                        "Choices": {
+                            "both": "Movement and Turn Start",
+                            "movement": "Movement Only",
+                            "turn": "Turn Start Only"
+                        }
+                    },
+                    "onEnterSaveFailEffect": {
+                        "hint": "Legacy failed-save effect UUID.",
+                        "label": "Legacy Fail Effect"
+                    },
+                    "onEnterSaveFailStatuses": {
+                        "hint": "Statuses applied on failed save.",
+                        "label": "Fail Statuses"
+                    },
+                    "onEnterSaveDmgFormula": {
+                        "hint": "Damage after the saving throw.",
+                        "label": "Save Damage Formula"
+                    },
+                    "onEnterSaveDmgType": {
+                        "hint": "Save damage type.",
+                        "label": "Save Damage Type"
+                    },
+                    "onEnterSaveDmgHalfOnSuccess": {
+                        "hint": "Half damage on successful save.",
+                        "label": "Half Damage on Success"
+                    },
+                    "onEnterSaveSuccessStatuses": {
+                        "hint": "Statuses applied on successful save.",
+                        "label": "Success Statuses"
+                    },
+                    "onEnterSaveStatusDuration": {
+                        "label": "Status Duration",
+                        "hint": "When to remove save-outcome statuses.",
+                        "Choices": {
+                            "manual": "Manual removal",
+                            "rounds": "N rounds",
+                            "untilTurnStart": "Until target turn starts",
+                            "untilTurnEnd": "Until target turn ends",
+                            "whileInAura": "While target remains in aura"
+                        }
+                    },
+                    "onEnterSaveStatusRounds": {
+                        "label": "Status Rounds",
+                        "hint": "How many rounds the status lasts."
+                    },
+                    "onEnterSaveRepeatSaveEndOfTurn": {
+                        "label": "Repeat Save at End of Turn",
+                        "hint": "End of turn: repeat the save; on success, remove the status."
                     }
                 }
             }
@@ -100,7 +160,30 @@
                 "Name": "Mostrar Círculos com Diagonais Exatas"
             }
         },
-        "SHEETS.AuraActiveEffectSheet": "Ficha de Aura Effect"
+        "SHEETS.AuraActiveEffectSheet": "Ficha de Aura Effect",
+        "OnEnter": {
+            "HealFlavor": "{effect} - healing {actor} ({type})",
+            "DamageFlavor": "{effect} - damage {actor} ({type})",
+            "SavePrompt": "<strong>{effect}</strong>: {actor} must make a <strong>{ability} DC {dc}</strong> saving throw.",
+            "SaveFailManualNote": "On failure, apply manually: <em>{outcomes}</em>",
+            "SaveFailedApplyEffect": "<strong>{effect}</strong>: {actor} failed the saving throw. Apply status/effect: <em>{effectName}</em>",
+            "NoFailEffect": "None",
+            "CustomFailEffect": "Custom UUID: {uuid}",
+            "StatusImmune": "<strong>{effect}</strong>: {actor} is immune to: <em>{statuses}</em>.",
+            "StatusUnsupported": "<strong>{effect}</strong>: {actor} cannot receive these statuses automatically: <em>{statuses}</em>.",
+            "ApplyFailOutcomes": "Apply Failure Outcomes",
+            "FailOutcomesApplied": "Failure Outcomes Applied",
+            "SaveSuccessManualNote": "On success, apply manually: <em>{outcomes}</em>",
+            "ApplySuccessOutcomes": "Apply Success Outcomes",
+            "SuccessOutcomesApplied": "Success Outcomes Applied",
+            "SaveDamageOutcome": "{formula} {type} damage",
+            "SaveDamageFlavor": "{effect} - save damage {actor} ({outcome}, {type}; applying {total})",
+            "SuccessOutcome": "success",
+            "FailureOutcome": "failure",
+            "ApplyOutcomeShort": "Apply",
+            "OutcomeAppliedShort": "Done",
+            "RepeatSaveRemoved": "<strong>{actor}</strong> succeeds on the repeat save and removes <em>{status}</em> from <strong>{effect}</strong>."
+        }
     },
     "EFFECT.TABS": {
         "aura": "Aura"

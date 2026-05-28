@@ -7,7 +7,7 @@ import { canvasInit, destroyToken, drawGridLayer, drawToken, refreshToken, updat
 import { migrate } from "./migrations.mjs";
 import { api } from "./api.mjs";
 import { registerDnd5eHooks } from "./systems/dnd5e.mjs";
-import { checkOnEnterForMovingToken, registerOnEnterHooks } from "./onEnterHealing.mjs";
+import { applyOnEnterFailOutcomes, applyOnEnterSaveOutcome, checkOnEnterForMovingToken, registerOnEnterHooks } from "./onEnterHealing.mjs";
 
 /** @import { ActiveEffect, TokenDocument, User } from "@client/documents/_module.mjs"; */
 /** @import { TokenMovementOperation } from "@client/documents/_types.mjs" */
@@ -286,6 +286,8 @@ function registerHooks() {
 function registerQueries() {
   CONFIG.queries["auraeffects.deleteEffects"] = deleteEffects;
   CONFIG.queries["auraeffects.applyAuraEffects"] = applyAuraEffects;
+  CONFIG.queries["auraeffects.applyOnEnterFailOutcomes"] = applyOnEnterFailOutcomes;
+  CONFIG.queries["auraeffects.applyOnEnterSaveOutcome"] = applyOnEnterSaveOutcome;
 }
 
 function registerAuraType() {

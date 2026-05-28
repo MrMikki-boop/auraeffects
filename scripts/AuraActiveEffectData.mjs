@@ -4,6 +4,57 @@ import { executeScript } from "./helpers.mjs";
 
 const { ArrayField, BooleanField, ColorField, JavaScriptField, NumberField, SetField, SchemaField, StringField } = foundry.data.fields;
 
+const DEFAULT_DAMAGE_TYPES = {
+  acid: "Acid",
+  bludgeoning: "Bludgeoning",
+  cold: "Cold",
+  fire: "Fire",
+  force: "Force",
+  lightning: "Lightning",
+  necrotic: "Necrotic",
+  piercing: "Piercing",
+  poison: "Poison",
+  psychic: "Psychic",
+  radiant: "Radiant",
+  slashing: "Slashing",
+  thunder: "Thunder"
+};
+
+const DEFAULT_ABILITIES = {
+  str: "Strength",
+  dex: "Dexterity",
+  con: "Constitution",
+  int: "Intelligence",
+  wis: "Wisdom",
+  cha: "Charisma"
+};
+
+const SAVE_MODES = {
+  prompt: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveMode.Choices.prompt",
+  auto: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveMode.Choices.auto"
+};
+
+const TRIGGER_MODES = {
+  both: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterTrigger.Choices.both",
+  movement: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterTrigger.Choices.movement",
+  turn: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterTrigger.Choices.turn"
+};
+
+const STATUS_DURATION_MODES = {
+  manual: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveStatusDuration.Choices.manual",
+  rounds: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveStatusDuration.Choices.rounds",
+  untilTurnStart: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveStatusDuration.Choices.untilTurnStart",
+  untilTurnEnd: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveStatusDuration.Choices.untilTurnEnd",
+  whileInAura: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveStatusDuration.Choices.whileInAura"
+};
+
+function choicesFromSystemConfig(config, fallback) {
+  return Object.fromEntries(Object.entries(fallback).map(([key, label]) => [
+    key,
+    config?.[key]?.label ?? config?.[key]?.name ?? label
+  ]));
+}
+
 export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel {
   static LOCALIZATION_PREFIXES = ["AURAEFFECTS.ACTIVEEFFECT.Aura"];
   static defineSchema() {
@@ -55,6 +106,10 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
 
       // --- On-Enter Effect fields ---
       onEnterEnabled: new BooleanField({ initial: false }),
+      onEnterTrigger: new StringField({
+        initial: "both",
+        choices: TRIGGER_MODES
+      }),
       onEnterDisposition: new NumberField({
         initial: DISPOSITIONS.FRIENDLY,
         choices: {
@@ -84,27 +139,34 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
       onEnterDmgFormula: new StringField({ initial: "" }),
       onEnterDmgType: new StringField({
         initial: "fire",
-        choices: {
-          acid: "DND5E.DamageAcid", bludgeoning: "DND5E.DamageBludgeoning",
-          cold: "DND5E.DamageCold", fire: "DND5E.DamageFire",
-          force: "DND5E.DamageForce", lightning: "DND5E.DamageLightning",
-          necrotic: "DND5E.DamageNecrotic", piercing: "DND5E.DamagePiercing",
-          poison: "DND5E.DamagePoison", psychic: "DND5E.DamagePsychic",
-          radiant: "DND5E.DamageRadiant", slashing: "DND5E.DamageSlashing",
-          thunder: "DND5E.DamageThunder"
-        }
+        choices: choicesFromSystemConfig(CONFIG.DND5E?.damageTypes, DEFAULT_DAMAGE_TYPES)
       }),
 
       // Saving throw
       onEnterSaveEnabled: new BooleanField({ initial: false }),
+      onEnterSaveMode: new StringField({
+        initial: "prompt",
+        choices: SAVE_MODES
+      }),
       onEnterSaveAbility: new StringField({
         initial: "con",
-        choices: {
-          str: "DND5E.AbilityStr", dex: "DND5E.AbilityDex", con: "DND5E.AbilityCon",
-          int: "DND5E.AbilityInt", wis: "DND5E.AbilityWis", cha: "DND5E.AbilityCha"
-        }
+        choices: choicesFromSystemConfig(CONFIG.DND5E?.abilities, DEFAULT_ABILITIES)
       }),
       onEnterSaveDC: new StringField({ initial: "8+@prof+@abilities.con.mod" }),
+      onEnterSaveDmgFormula: new StringField({ initial: "" }),
+      onEnterSaveDmgType: new StringField({
+        initial: "fire",
+        choices: choicesFromSystemConfig(CONFIG.DND5E?.damageTypes, DEFAULT_DAMAGE_TYPES)
+      }),
+      onEnterSaveDmgHalfOnSuccess: new BooleanField({ initial: true }),
+      onEnterSaveFailStatuses: new SetField(new StringField(), { initial: [] }),
+      onEnterSaveSuccessStatuses: new SetField(new StringField(), { initial: [] }),
+      onEnterSaveStatusDuration: new StringField({
+        initial: "manual",
+        choices: STATUS_DURATION_MODES
+      }),
+      onEnterSaveStatusRounds: new NumberField({ initial: 1, min: 1, integer: true }),
+      onEnterSaveRepeatSaveEndOfTurn: new BooleanField({ initial: false }),
       onEnterSaveFailEffect: new StringField({ initial: "" }),
       onEnterDmgDisposition: new NumberField({
         initial: DISPOSITIONS.HOSTILE,

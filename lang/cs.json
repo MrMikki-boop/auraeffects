@@ -4,31 +4,31 @@
             "Aura": {
                 "FIELDS": {
                     "applyToSelf": {
-                        "hint": "Po zaškrtnutí tato aura bude působit i na zdrojový token.",
+                        "hint": "Apply the aura to its source.",
                         "label": "Působit na sebe?"
                     },
                     "bestFormula": {
-                        "hint": "Vzorec vyhodnocovaný pomocí dat hodu zdrojového aktéra pro určení nejsilnějšího efektu v případě nemožnosti sčítání. Pokud zůstane prázdné, rozhoduje pořadí.",
+                        "hint": "Strength formula for non-stacking auras.",
                         "label": "\"Nejlepší\" vzorec"
                     },
                     "canStack": {
-                        "hint": "Po zaškrtnutí se na příslušné tokeny mohou současně uplatnit i další aury se stejným názvem.",
+                        "hint": "Allow multiple matching auras.",
                         "label": "Mohou se aury sčítat?"
                     },
                     "collisionTypes": {
-                        "hint": "Jaké typy zdí, pokud vůbec nějaké, tuto auru zastaví.",
+                        "hint": "Wall types that block the aura.",
                         "label": "Typy kolize"
                     },
                     "color": {
-                        "hint": "Pokud je prázdné, převezme barvu uživatele (nebo PJ, pokud nemá postavu přiřazenou žádný uživatel).",
+                        "hint": "Aura visualization color.",
                         "label": "Barva"
                     },
                     "combatOnly": {
-                        "hint": "Po zaškrtnutí bude tento efekt mimo boj potlačován.",
+                        "hint": "Only active in combat.",
                         "label": "Pouze v boji?"
                     },
                     "disableOnHidden": {
-                        "hint": "Po zaškrtnutí bude, pokud je token skrytý, tento efekt potlačován.",
+                        "hint": "Disable while the source is hidden.",
                         "label": "Potlačit při skrytí tokenu?"
                     },
                     "disposition": {
@@ -37,32 +37,92 @@
                             "Friendly": "Přátelský",
                             "Hostile": "Nepřátelský"
                         },
-                        "hint": "Na jaké typy postojů (vztahujících se ke zdrojovému tokenu) se tato aura vztahuje.",
+                        "hint": "Who the aura applies to.",
                         "label": "Postoj"
                     },
                     "distanceFormula": {
-                        "hint": "Určuje poloměr, do jaké vzdálenosti tato aura sahá (lze použít i datový vzorec).",
+                        "hint": "Aura radius.",
                         "label": "Vzdálenost"
                     },
                     "evaluatePreApply": {
-                        "hint": "Po zaškrtnutí budou změny vyhodnoceny před aplikací efektu s využitím dat hodu zdrojového aktéra, pokud je třeba.",
+                        "hint": "Evaluate changes before applying.",
                         "label": "Vyhodnotit změny dříve"
                     },
                     "opacity": {
-                        "hint": "Jak průhledná či neprůhledná má aura být.",
+                        "hint": "Visualization opacity.",
                         "label": "Neprůhlednost"
                     },
                     "overrideName": {
-                        "hint": "Jaký název má mít použitý efekt (pro převzetí názvu základního efektu ponech prázdné).",
+                        "hint": "Name of the applied effect.",
                         "label": "Název efektu"
                     },
                     "script": {
-                        "hint": "Výraz, který, pokud je pravdivý či prázdný, znamená, že se má aura použít.",
+                        "hint": "Aura application condition.",
                         "label": "Podmíněný skript"
                     },
                     "showRadius": {
-                        "hint": "Po zaškrtnutí se okraj aury zobrazí u všech uživatelů.",
+                        "hint": "Show radius to all users.",
                         "label": "Zobrazit poloměr?"
+                    },
+                    "onEnterSaveMode": {
+                        "hint": "Chat request or automatic roll.",
+                        "label": "Save Mode",
+                        "Choices": {
+                            "prompt": "Post Chat Request",
+                            "auto": "Roll Immediately"
+                        }
+                    },
+                    "onEnterTrigger": {
+                        "hint": "When on-enter effects trigger.",
+                        "label": "Trigger Timing",
+                        "Choices": {
+                            "both": "Movement and Turn Start",
+                            "movement": "Movement Only",
+                            "turn": "Turn Start Only"
+                        }
+                    },
+                    "onEnterSaveFailEffect": {
+                        "hint": "Legacy failed-save effect UUID.",
+                        "label": "Legacy Fail Effect"
+                    },
+                    "onEnterSaveFailStatuses": {
+                        "hint": "Statuses applied on failed save.",
+                        "label": "Fail Statuses"
+                    },
+                    "onEnterSaveDmgFormula": {
+                        "hint": "Damage after the saving throw.",
+                        "label": "Save Damage Formula"
+                    },
+                    "onEnterSaveDmgType": {
+                        "hint": "Save damage type.",
+                        "label": "Save Damage Type"
+                    },
+                    "onEnterSaveDmgHalfOnSuccess": {
+                        "hint": "Half damage on successful save.",
+                        "label": "Half Damage on Success"
+                    },
+                    "onEnterSaveSuccessStatuses": {
+                        "hint": "Statuses applied on successful save.",
+                        "label": "Success Statuses"
+                    },
+                    "onEnterSaveStatusDuration": {
+                        "label": "Status Duration",
+                        "hint": "When to remove save-outcome statuses.",
+                        "Choices": {
+                            "manual": "Manual removal",
+                            "rounds": "N rounds",
+                            "untilTurnStart": "Until target turn starts",
+                            "untilTurnEnd": "Until target turn ends",
+                            "whileInAura": "While target remains in aura"
+                        }
+                    },
+                    "onEnterSaveStatusRounds": {
+                        "label": "Status Rounds",
+                        "hint": "How many rounds the status lasts."
+                    },
+                    "onEnterSaveRepeatSaveEndOfTurn": {
+                        "label": "Repeat Save at End of Turn",
+                        "hint": "End of turn: repeat the save; on success, remove the status."
                     }
                 }
             }
@@ -100,7 +160,30 @@
                 "Name": "Zobrazovat přesné úhlopříčky?"
             }
         },
-        "SHEETS.AuraActiveEffectSheet": "Deník aktivního efektu aury"
+        "SHEETS.AuraActiveEffectSheet": "Deník aktivního efektu aury",
+        "OnEnter": {
+            "HealFlavor": "{effect} - healing {actor} ({type})",
+            "DamageFlavor": "{effect} - damage {actor} ({type})",
+            "SavePrompt": "<strong>{effect}</strong>: {actor} must make a <strong>{ability} DC {dc}</strong> saving throw.",
+            "SaveFailManualNote": "On failure, apply manually: <em>{outcomes}</em>",
+            "SaveFailedApplyEffect": "<strong>{effect}</strong>: {actor} failed the saving throw. Apply status/effect: <em>{effectName}</em>",
+            "NoFailEffect": "None",
+            "CustomFailEffect": "Custom UUID: {uuid}",
+            "StatusImmune": "<strong>{effect}</strong>: {actor} is immune to: <em>{statuses}</em>.",
+            "StatusUnsupported": "<strong>{effect}</strong>: {actor} cannot receive these statuses automatically: <em>{statuses}</em>.",
+            "ApplyFailOutcomes": "Apply Failure Outcomes",
+            "FailOutcomesApplied": "Failure Outcomes Applied",
+            "SaveSuccessManualNote": "On success, apply manually: <em>{outcomes}</em>",
+            "ApplySuccessOutcomes": "Apply Success Outcomes",
+            "SuccessOutcomesApplied": "Success Outcomes Applied",
+            "SaveDamageOutcome": "{formula} {type} damage",
+            "SaveDamageFlavor": "{effect} - save damage {actor} ({outcome}, {type}; applying {total})",
+            "SuccessOutcome": "success",
+            "FailureOutcome": "failure",
+            "ApplyOutcomeShort": "Apply",
+            "OutcomeAppliedShort": "Done",
+            "RepeatSaveRemoved": "<strong>{actor}</strong> succeeds on the repeat save and removes <em>{status}</em> from <strong>{effect}</strong>."
+        }
     },
     "EFFECT.TABS": {
         "aura": "Aura"

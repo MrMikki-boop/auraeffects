@@ -1,79 +1,130 @@
-<section class="tab scrollable{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
-    <button type="button" data-tooltip="AURAEFFECTS.ConvertToNormalHint" data-action="revert">
-        <i class="fa-solid fa-xmark"></i>
-        {{localize "AURAEFFECTS.ConvertToNormal"}}
-    </button>
+<section class="tab scrollable auraeffects-config{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <header class="auraeffects-toolbar">
+        <button type="button" class="auraeffects-revert" data-tooltip="AURAEFFECTS.ConvertToNormalHint" data-action="revert">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>{{localize "AURAEFFECTS.ConvertToNormal"}}</span>
+        </button>
+    </header>
 
-    {{!-- ═══ Base aura settings ═══ --}}
-    {{formGroup fields.distanceFormula value=source.system.distanceFormula rootId=rootId}}
-    {{formGroup fields.applyToSelf value=source.system.applyToSelf rootId=rootId}}
-    {{formGroup fields.disposition value=source.system.disposition localize=true rootId=rootId}}
-    {{formGroup fields.overrideName value=source.system.overrideName placeholder=source.name rootId=rootId}}
-    {{formGroup fields.canStack value=source.system.canStack rootId=rootId}}
-    {{formGroup fields.bestFormula value=source.system.bestFormula rootId=rootId}}
-    {{#unless isDAEEnabled}}
-        {{formGroup fields.evaluatePreApply value=source.system.evaluatePreApply rootId=rootId}}
-    {{/unless}}
-    {{formGroup fields.collisionTypes value=source.system.collisionTypes localize=true rootId=rootId}}
-    {{formGroup fields.combatOnly value=source.system.combatOnly rootId=rootId}}
-    {{formGroup fields.disableOnHidden value=source.system.disableOnHidden rootId=rootId}}
-    {{formGroup fields.script value=source.system.script rootId=rootId}}
+    <fieldset class="auraeffects-section auraeffects-section-core">
+        <legend><i class="fa-solid fa-person-rays"></i> {{localize "TYPES.ActiveEffect.auraeffects.aura"}}</legend>
+        {{formGroup fields.distanceFormula value=source.system.distanceFormula rootId=rootId}}
+        {{formGroup fields.applyToSelf value=source.system.applyToSelf rootId=rootId}}
+        {{formGroup fields.disposition value=source.system.disposition localize=true rootId=rootId}}
+        {{formGroup fields.overrideName value=source.system.overrideName placeholder=source.name rootId=rootId}}
+        {{formGroup fields.canStack value=source.system.canStack rootId=rootId}}
+        {{formGroup fields.bestFormula value=source.system.bestFormula rootId=rootId}}
+        {{#unless isDAEEnabled}}
+            {{formGroup fields.evaluatePreApply value=source.system.evaluatePreApply rootId=rootId}}
+        {{/unless}}
+        {{formGroup fields.collisionTypes value=source.system.collisionTypes localize=true rootId=rootId}}
+        {{formGroup fields.combatOnly value=source.system.combatOnly rootId=rootId}}
+        {{formGroup fields.disableOnHidden value=source.system.disableOnHidden rootId=rootId}}
+        {{formGroup fields.script value=source.system.script rootId=rootId}}
+    </fieldset>
 
-    {{!-- ═══ Visualization ═══ --}}
-    <fieldset>
-        <legend>{{localize "AURAEFFECTS.OnEnter.VisualizationLegend"}}</legend>
+    <fieldset class="auraeffects-section">
+        <legend><i class="fa-solid fa-eye"></i> {{localize "AURAEFFECTS.OnEnter.VisualizationLegend"}}</legend>
         {{formGroup fields.showRadius value=source.system.showRadius rootId=rootId}}
         {{formGroup fields.color value=source.system.color rootId=rootId}}
         {{formGroup fields.opacity value=source.system.opacity rootId=rootId}}
     </fieldset>
 
-    {{!-- ═══ On-Enter Effects ═══ --}}
-    <fieldset>
-        <legend>{{localize "AURAEFFECTS.OnEnter.Legend"}}</legend>
-
-        {{!-- Common settings --}}
+    <fieldset class="auraeffects-section auraeffects-section-on-enter">
+        <legend><i class="fa-solid fa-bolt"></i> {{localize "AURAEFFECTS.OnEnter.Legend"}}</legend>
         {{formGroup fields.onEnterEnabled value=source.system.onEnterEnabled rootId=rootId}}
-        {{formGroup fields.onEnterDisposition value=source.system.onEnterDisposition localize=true rootId=rootId}}
-        {{formGroup fields.onEnterApplyToSelf value=source.system.onEnterApplyToSelf rootId=rootId}}
-        {{formGroup fields.onEnterUsesMax value=source.system.onEnterUsesMax rootId=rootId}}
-        {{#if source.system.onEnterUsesMax}}
-            <div class="form-group">
-                <label>{{localize "AURAEFFECTS.OnEnter.UsesRemaining"}}</label>
-                <div class="form-fields">
-                    <span>{{source.system.onEnterUsesRemaining}}</span>
-                    <button type="button" data-action="resetUses" data-tooltip="AURAEFFECTS.OnEnter.ResetUsesHint">
-                        <i class="fa-solid fa-rotate-left"></i>
-                    </button>
+
+        <div data-auraeffects-section="onEnterEnabled"{{#unless source.system.onEnterEnabled}} hidden{{/unless}}>
+            {{formGroup fields.onEnterTrigger value=source.system.onEnterTrigger localize=true rootId=rootId}}
+            {{formGroup fields.onEnterDisposition value=source.system.onEnterDisposition localize=true rootId=rootId}}
+            {{formGroup fields.onEnterApplyToSelf value=source.system.onEnterApplyToSelf rootId=rootId}}
+            {{formGroup fields.onEnterUsesMax value=source.system.onEnterUsesMax rootId=rootId}}
+            {{#if source.system.onEnterUsesMax}}
+                <div class="form-group">
+                    <label>{{localize "AURAEFFECTS.OnEnter.UsesRemaining"}}</label>
+                    <div class="form-fields">
+                        <span class="auraeffects-uses">{{source.system.onEnterUsesRemaining}}</span>
+                        <button type="button" class="icon" data-action="resetUses" data-tooltip="AURAEFFECTS.OnEnter.ResetUsesHint">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
                 </div>
+            {{/if}}
+            {{formGroup fields.onEnterScript value=source.system.onEnterScript rootId=rootId}}
+
+            <div class="auraeffects-trigger-grid">
+                <fieldset class="auraeffects-trigger">
+                    <legend><i class="fa-solid fa-heart-pulse"></i> {{localize "AURAEFFECTS.OnEnter.HealLegend"}}</legend>
+                    {{formGroup fields.onEnterHealEnabled value=source.system.onEnterHealEnabled rootId=rootId}}
+                    <div data-auraeffects-section="onEnterHealEnabled"{{#unless source.system.onEnterHealEnabled}} hidden{{/unless}}>
+                        {{formGroup fields.onEnterHealFormula value=source.system.onEnterHealFormula rootId=rootId}}
+                        {{formGroup fields.onEnterHealType value=source.system.onEnterHealType localize=true rootId=rootId}}
+                    </div>
+                </fieldset>
+
+                <fieldset class="auraeffects-trigger">
+                    <legend><i class="fa-solid fa-burst"></i> {{localize "AURAEFFECTS.OnEnter.DmgLegend"}}</legend>
+                    {{formGroup fields.onEnterDmgEnabled value=source.system.onEnterDmgEnabled rootId=rootId}}
+                    <div data-auraeffects-section="onEnterDmgEnabled"{{#unless source.system.onEnterDmgEnabled}} hidden{{/unless}}>
+                        {{formGroup fields.onEnterDmgFormula value=source.system.onEnterDmgFormula rootId=rootId}}
+                        {{formGroup fields.onEnterDmgType value=source.system.onEnterDmgType localize=true rootId=rootId}}
+                        {{formGroup fields.onEnterDmgDisposition value=source.system.onEnterDmgDisposition localize=true rootId=rootId}}
+                    </div>
+                </fieldset>
+
+                <fieldset class="auraeffects-trigger">
+                    <legend><i class="fa-solid fa-shield-halved"></i> {{localize "AURAEFFECTS.OnEnter.SaveLegend"}}</legend>
+                    {{formGroup fields.onEnterSaveEnabled value=source.system.onEnterSaveEnabled rootId=rootId}}
+                    <div data-auraeffects-section="onEnterSaveEnabled"{{#unless source.system.onEnterSaveEnabled}} hidden{{/unless}}>
+                        {{formGroup fields.onEnterSaveMode value=source.system.onEnterSaveMode localize=true rootId=rootId}}
+                        {{formGroup fields.onEnterSaveAbility value=source.system.onEnterSaveAbility localize=true rootId=rootId}}
+                        {{formGroup fields.onEnterSaveDC value=source.system.onEnterSaveDC rootId=rootId}}
+                        {{formGroup fields.onEnterSaveDmgFormula value=source.system.onEnterSaveDmgFormula rootId=rootId}}
+                        {{formGroup fields.onEnterSaveDmgType value=source.system.onEnterSaveDmgType localize=true rootId=rootId}}
+                        {{formGroup fields.onEnterSaveDmgHalfOnSuccess value=source.system.onEnterSaveDmgHalfOnSuccess rootId=rootId}}
+                        <div class="form-group">
+                            <label>{{localize "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveFailStatuses.label"}}</label>
+                            <div class="form-fields">
+                                <multi-select name="system.onEnterSaveFailStatuses">
+                                    {{#each failStatuses}}
+                                        <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                                    {{/each}}
+                                </multi-select>
+                            </div>
+                            <p class="hint">{{localize "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveFailStatuses.hint"}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label>{{localize "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveSuccessStatuses.label"}}</label>
+                            <div class="form-fields">
+                                <multi-select name="system.onEnterSaveSuccessStatuses">
+                                    {{#each successStatuses}}
+                                        <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                                    {{/each}}
+                                </multi-select>
+                            </div>
+                            <p class="hint">{{localize "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveSuccessStatuses.hint"}}</p>
+                        </div>
+                        {{formGroup fields.onEnterSaveStatusDuration value=source.system.onEnterSaveStatusDuration localize=true rootId=rootId}}
+                        <div data-auraeffects-status-rounds>
+                            {{formGroup fields.onEnterSaveStatusRounds value=source.system.onEnterSaveStatusRounds rootId=rootId}}
+                        </div>
+                        {{formGroup fields.onEnterSaveRepeatSaveEndOfTurn value=source.system.onEnterSaveRepeatSaveEndOfTurn rootId=rootId}}
+                        {{#if legacyFailEffect}}
+                            <div class="form-group auraeffects-legacy-fail-effect">
+                                <label>{{localize "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveFailEffect.label"}}</label>
+                                <div class="form-fields">
+                                    <label>
+                                        <input type="checkbox" data-auraeffects-legacy-fail-effect value="{{legacyFailEffect.uuid}}" checked>
+                                        {{legacyFailEffect.label}}
+                                    </label>
+                                </div>
+                                <p class="hint">{{localize "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveFailEffect.hint"}}</p>
+                            </div>
+                        {{/if}}
+                        {{formGroup fields.onEnterSaveDisposition value=source.system.onEnterSaveDisposition localize=true rootId=rootId}}
+                    </div>
+                </fieldset>
             </div>
-        {{/if}}
-        {{formGroup fields.onEnterScript value=source.system.onEnterScript rootId=rootId}}
-
-        {{!-- Healing --}}
-        <fieldset>
-            <legend>{{localize "AURAEFFECTS.OnEnter.HealLegend"}}</legend>
-            {{formGroup fields.onEnterHealEnabled value=source.system.onEnterHealEnabled rootId=rootId}}
-            {{formGroup fields.onEnterHealFormula value=source.system.onEnterHealFormula rootId=rootId}}
-            {{formGroup fields.onEnterHealType value=source.system.onEnterHealType localize=true rootId=rootId}}
-        </fieldset>
-
-        {{!-- Damage --}}
-        <fieldset>
-            <legend>{{localize "AURAEFFECTS.OnEnter.DmgLegend"}}</legend>
-            {{formGroup fields.onEnterDmgEnabled value=source.system.onEnterDmgEnabled rootId=rootId}}
-            {{formGroup fields.onEnterDmgFormula value=source.system.onEnterDmgFormula rootId=rootId}}
-            {{formGroup fields.onEnterDmgType value=source.system.onEnterDmgType localize=true rootId=rootId}}
-            {{formGroup fields.onEnterDmgDisposition value=source.system.onEnterDmgDisposition localize=true rootId=rootId}}
-        </fieldset>
-
-        {{!-- Saving throw --}}
-        <fieldset>
-            <legend>{{localize "AURAEFFECTS.OnEnter.SaveLegend"}}</legend>
-            {{formGroup fields.onEnterSaveEnabled value=source.system.onEnterSaveEnabled rootId=rootId}}
-            {{formGroup fields.onEnterSaveAbility value=source.system.onEnterSaveAbility localize=true rootId=rootId}}
-            {{formGroup fields.onEnterSaveDC value=source.system.onEnterSaveDC rootId=rootId}}
-            {{formGroup fields.onEnterSaveFailEffect value=source.system.onEnterSaveFailEffect rootId=rootId}}
-            {{formGroup fields.onEnterSaveDisposition value=source.system.onEnterSaveDisposition localize=true rootId=rootId}}
-        </fieldset>
+        </div>
     </fieldset>
 </section>
