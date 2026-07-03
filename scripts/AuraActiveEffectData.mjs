@@ -48,6 +48,13 @@ const STATUS_DURATION_MODES = {
   whileInAura: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.onEnterSaveStatusDuration.Choices.whileInAura"
 };
 
+const RADIUS_SHAPES = {
+  grid: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.radiusShape.Choices.grid",
+  circle: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.radiusShape.Choices.circle",
+  diamond: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.radiusShape.Choices.diamond",
+  square: "AURAEFFECTS.ACTIVEEFFECT.Aura.FIELDS.radiusShape.Choices.square"
+};
+
 function choicesFromSystemConfig(config, fallback) {
   return Object.fromEntries(Object.entries(fallback).map(([key, label]) => [
     key,
@@ -92,6 +99,10 @@ export default class AuraActiveEffectData extends foundry.abstract.TypeDataModel
         max: 1,
         step: 0.05,
         initial: 0.25
+      }),
+      radiusShape: new StringField({
+        initial: "grid",
+        choices: RADIUS_SHAPES
       }),
       overrideName: new StringField({ initial: '' }),
       script: new JavaScriptField(),

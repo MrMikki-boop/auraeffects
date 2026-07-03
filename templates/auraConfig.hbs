@@ -26,6 +26,7 @@
     <fieldset class="auraeffects-section">
         <legend><i class="fa-solid fa-eye"></i> {{localize "AURAEFFECTS.OnEnter.VisualizationLegend"}}</legend>
         {{formGroup fields.showRadius value=source.system.showRadius rootId=rootId}}
+        {{formGroup fields.radiusShape value=source.system.radiusShape localize=true rootId=rootId}}
         {{formGroup fields.color value=source.system.color rootId=rootId}}
         {{formGroup fields.opacity value=source.system.opacity rootId=rootId}}
     </fieldset>

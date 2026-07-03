@@ -123,6 +123,16 @@
                     "onEnterSaveRepeatSaveEndOfTurn": {
                         "label": "Repeat Save at End of Turn",
                         "hint": "End of turn: repeat the save; on success, remove the status."
+                    },
+                    "radiusShape": {
+                        "label": "Radius Shape",
+                        "hint": "Shape used to draw the aura radius.",
+                        "Choices": {
+                            "grid": "Grid shape",
+                            "circle": "Circle",
+                            "diamond": "Diamond",
+                            "square": "Square"
+                        }
                     }
                 }
             }

@@ -51,7 +51,7 @@ jobs:
           fi
           node - <<'NODE'
           const manifest = require("./module.json");
-          const expectedDownload = `/releases/download/${manifest.version}/module.zip`;
+          const expectedDownload = `/releases/download/${manifest.version}/auraeffects.zip`;
           if (!manifest.download?.includes(expectedDownload)) {
             console.error(`module.json download must include ${expectedDownload}`);
             process.exit(1);
@@ -72,10 +72,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build module.zip
+      - name: Build auraeffects.zip
         run: |
           mkdir -p dist
-          zip -r dist/module.zip module.json README.md LICENSE lang packs scripts styles templates \
+          zip -r dist/auraeffects.zip module.json README.md LICENSE lang packs scripts styles templates \
             -x "packs/**/LOCK" \
             -x "packs/**/LOG" \
             -x "packs/**/*.log" \
@@ -88,11 +88,11 @@ jobs:
           name: auraeffects-release
           path: |
             dist/module.json
-            dist/module.zip
+            dist/auraeffects.zip
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/module.json
-            dist/module.zip
+            dist/auraeffects.zip

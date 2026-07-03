@@ -93,7 +93,12 @@ async function migrateOnEnterOutcomes() {
     const updates = parent.effects
       .map(getOnEnterOutcomeMigration)
       .filter(Boolean);
-    if (updates.length) await parent.updateEmbeddedDocuments("ActiveEffect", updates);
+    if (!updates.length) continue;
+    try {
+      await parent.updateEmbeddedDocuments("ActiveEffect", updates);
+    } catch (error) {
+      console.error(`Aura Effects | Failed to migrate aura effects on ${parent.uuid ?? parent.name}`, error);
+    }
   }
 }
 

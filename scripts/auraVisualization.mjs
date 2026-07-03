@@ -115,7 +115,8 @@ function updateAurasForToken(token, onlyNew = false) {
       walls: data.walls,
       alpha: data.opacity,
       color: data.color ?? tokenOwner?.color,
-      collisionTypes: data.collisionTypes
+      collisionTypes: data.collisionTypes,
+      radiusShape: data.radiusShape
     });
     aura.add();
 
@@ -131,7 +132,7 @@ function refreshAuras() {
   canvas.interface.grid?.auraEffects?.removeChildren();
   for (const aura of canvas.effects.auraEffects) {
     if (!aura.active) continue;
-    canvas.interface.grid?.auraEffects?.addChild(aura.graphics);
+    canvas.interface.grid?.auraEffects?.addChild(aura.displayObject);
   }
 }
 

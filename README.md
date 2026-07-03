@@ -21,6 +21,15 @@ Open an aura Active Effect and use the **Aura** tab.
 | Uses | Optional maximum uses before the aura stops firing. |
 | Script | Optional condition checked before outcomes run. |
 
+## Visualization
+
+Aura radius visualization can be configured per aura:
+
+| Setting | What it does |
+| --- | --- |
+| Radius shape | Grid shape, circle, diamond, or square. |
+| Color / opacity | Main aura fill color and transparency. |
+
 ### Healing And Damage
 
 Healing and damage use formulas such as `1d6`, `2d8+@abilities.wis.mod`, or fixed values.
